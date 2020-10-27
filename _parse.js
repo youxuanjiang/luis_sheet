@@ -20,7 +20,7 @@ function listOfIntentsAndQuestions(cells) {
 
 const convert = async googleSheet => {
   const doc = new GoogleSpreadsheet(googleSheet);
-  // await promisify(doc.useServiceAccountAuth)(creds);
+  await promisify(doc.useServiceAccountAuth)(creds);
   const info = await promisify(doc.getInfo)();
   const sheetLength = info.worksheets.length;
   const sheet = info.worksheets;
