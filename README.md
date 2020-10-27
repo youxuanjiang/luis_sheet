@@ -11,7 +11,7 @@ https://git-scm.com/book/zh-tw/v2/開始-Git-安裝教學
 https://sasacode.wordpress.com/2018/05/18/nodejs-npm-入門-在windows上安裝/
 
 4. 安裝所需的套件(進入專案資料夾後輸入以下指令)
-  npm install
+  > npm install
   
 5. 修改 add_intent_to_luis.js (code中我有提示說哪裡要修改了)
 
@@ -21,4 +21,4 @@ https://sites.google.com/jes.mlc.edu.tw/ljj/linebot實做/申請google-sheet-api
 7. 新增一個檔案叫'cred'，並將金鑰貼進去
 
 8. 執行程式
-  npm start
+  > npm start
