@@ -2,7 +2,7 @@ const { GoogleSpreadsheet } = require('google-spreadsheet');
 const merge = require('deepmerge');
 const { promisify } = require('util');
 // Check: https://sites.google.com/jes.mlc.edu.tw/ljj/linebot實做/申請google-sheet-api
-const creds = require('LOCATION TO YOUR CRED');
+const creds = require('./cred');
 
 function listOfIntentsAndQuestions(cells) {
   const questions = {};
