@@ -23,5 +23,5 @@ npm install
 
 - 執行程式
  ```shell
- npm start
+ npm run start
 ```
