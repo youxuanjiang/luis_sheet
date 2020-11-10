@@ -2,7 +2,7 @@ const { GoogleSpreadsheet } = require('google-spreadsheet');
 const merge = require('deepmerge');
 const { promisify } = require('util');
 // Check: https://sites.google.com/jes.mlc.edu.tw/ljj/linebot實做/申請google-sheet-api
-const creds = require('LOCATION TO YOUR CRED');
+const creds = require('./cred');
 
 function listOfIntentsAndQuestions(cells) {
   const questions = {};
@@ -20,7 +20,7 @@ function listOfIntentsAndQuestions(cells) {
 
 const convert = async googleSheet => {
   const doc = new GoogleSpreadsheet(googleSheet);
-  // await promisify(doc.useServiceAccountAuth)(creds);
+  await promisify(doc.useServiceAccountAuth)(creds);
   const info = await promisify(doc.getInfo)();
   const sheetLength = info.worksheets.length;
   const sheet = info.worksheets;
