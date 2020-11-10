@@ -2,7 +2,7 @@ const parse = require('./_parse');
 const addIntents = require('./_intent');
 const upload = require('./_upload');
 
-// Hey Su Fang ~ Please Change these values ~
+// LUIS Configure
 const LUISauthoringKey = 'ENTER YOUR PREDICTION KEY';
 const LUISappName = 'ENTER YOUR APP NAME';
 const LUISendpoint = 'ENTER THE ADDRESS (THE ONE WITH LOCATION)';
