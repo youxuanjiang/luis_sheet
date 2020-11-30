@@ -3,14 +3,13 @@ const addIntents = require('./_intent');
 const upload = require('./_upload');
 
 // LUIS Configure
-const LUISauthoringKey = 'ENTER YOUR PREDICTION KEY';
-const LUISappName = 'ENTER YOUR APP NAME';
-const LUISendpoint = 'ENTER THE ADDRESS (THE ONE WITH LOCATION)';
+const LUISauthoringKey = 'change-me';
+const LUISappName = 'change-me';
+const LUISendpoint = 'change-me';
 const LUISappCulture = 'en-us'; // dont need to change
 const LUISversionId = '0.1'; // dont need to change
-const LUISappId = 'ENTER YOUR APP ID';
-const googleSheetLocation = 'ENTER YOUR GOOGLE SHEET LOCATION';
-
+const LUISappId = 'change-me';
+const googleSheetLocation = 'change-me';
 let intents = [];
 let questions = [];
 
@@ -48,9 +47,10 @@ parse(googleSheetLocation)
     // Save intent and questions names from parse
     intents = model.intents;
     questions = model.questions;
+    // console.log(intents);
+    // console.log(questions);
   })
-  .then(appId => {
-    LUISappId = appId;
+  .then(() => {
     // Add intents
     configAddIntents.LUISappId = LUISappId;
     configAddIntents.intentList = intents;

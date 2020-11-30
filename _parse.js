@@ -2,17 +2,19 @@ const { GoogleSpreadsheet } = require('google-spreadsheet');
 const merge = require('deepmerge');
 const { promisify } = require('util');
 // Check: https://sites.google.com/jes.mlc.edu.tw/ljj/linebot實做/申請google-sheet-api
-const creds = require('./cred');
+const creds = require('./cred.json');
 
-function listOfIntentsAndQuestions(cells) {
+function listOfIntentsAndQuestions(rows) {
   const questions = {};
   const intents = [];
-  for (const cell of cells) {
-    if (cell.col === 1) {
-      intents.push(cell.value);
-      questions[cell.value] = [];
-    } else {
-      questions[intents[intents.length - 1]].push(cell.value);
+  console.log(rows.length);
+  for (const row of rows) {
+    if(row.intent != ''){
+      intents.push(row.intent);
+      questions[row.intent] = [];
+      questions[intents[intents.length - 1]].push(row.question);
+    }else{
+      questions[intents[intents.length - 1]].push(row.question);
     }
   }
   return { intents, questions };
@@ -20,22 +22,22 @@ function listOfIntentsAndQuestions(cells) {
 
 const convert = async googleSheet => {
   const doc = new GoogleSpreadsheet(googleSheet);
-  await promisify(doc.useServiceAccountAuth)(creds);
-  const info = await promisify(doc.getInfo)();
-  const sheetLength = info.worksheets.length;
-  const sheet = info.worksheets;
+  await doc.useServiceAccountAuth(creds);
+  await doc.loadInfo();
+  // console.log(doc.index);
+  const sheet = doc.sheetsByIndex;
+  // console.log(sheet[0].getRows());
+  const sheetLength = sheet.length;
+  // console.log(sheetLength);
 
   console.log('Start parsing Google Sheet...');
   const intents = [];
   let questions = {};
 
   for (let i = 0; i < sheetLength; i += 1) {
-    const cells = await promisify(sheet[i].getCells)({
-      'min-row': 2,
-      'min-col': 1,
-      'return-empty': false,
-    });
-    const listedIntentsAndQuestions = listOfIntentsAndQuestions(cells);
+    //console.log(sheet[i]);
+    const rows = await sheet[i].getRows();
+    const listedIntentsAndQuestions = listOfIntentsAndQuestions(rows);
     questions = merge(questions, listedIntentsAndQuestions.questions);
     intents.push.apply(intents, listedIntentsAndQuestions.intents);
   }

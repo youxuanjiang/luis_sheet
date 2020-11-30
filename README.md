@@ -17,9 +17,19 @@ npm install
 
 - 修改 add_intent_to_luis.js (code中我有提示說哪裡要修改了)
 
-- [取得Google金鑰](https://sites.google.com/jes.mlc.edu.tw/ljj/linebot實做/申請google-sheet-api)(要透過程式存取google表單他要認金鑰的)
+- [取得Google金鑰](https://console.developers.google.com)(要透過程式存取google表單他要認金鑰的)
+  - 從google api建立一個app
+  - 點選左欄->憑證
+  - 建立憑證
+  - 點選「請幫我選擇」
+  - 選擇 google sheets API
+  - 來源選擇「網路伺服器」
+  - 點選「應用程式資料」、「否」
+  - 點選「我需要哪些憑證」
+  - 下載金鑰
+  - 將最後出現的那個信箱加入google表單的共用
 
-- 新增一個檔案叫'cred'，並將金鑰貼進去
+- 新增一個檔案叫'cred.json'，並將金鑰貼進去
 
 - 執行程式
  ```shell

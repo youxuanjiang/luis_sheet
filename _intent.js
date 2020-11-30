@@ -20,13 +20,13 @@ const callAddIntent = async options => {
 
     const response = await request(options);
     if (response.statusCode < 400) {
-      await suc();
-      // console.log(
-      //  `intent ${intent} succeed with status code  ${response.statusCode}`
-      // );
+      // await suc();
+      console.log(
+       `intent ${intent} succeed with status code  ${response.statusCode}`
+      );
       console.log(`The number of request attempts: ${response.attempts}\n`);
     } else if (response.statusCode >= 400) {
-      await fai();
+      // await fai();
       console.log(
         `intent ${intent} fail with status code  ${response.statusCode}`
       );
@@ -71,7 +71,7 @@ const addIntents = async config => {
 
   await Promise.all(intentPromises);
   console.log('Add intents done.');
-  console.log(`Success = ${succeed}\nFail = ${fail}\n`);
+  // console.log(`Success = ${succeed}\nFail = ${fail}\n`);
 };
 
 module.exports = addIntents;
