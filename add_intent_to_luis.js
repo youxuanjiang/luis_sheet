@@ -2,16 +2,20 @@ const parse = require('./_parse');
 const addIntents = require('./_intent');
 const upload = require('./_upload');
 
+
 // LUIS Configure
-const LUISauthoringKey = 'change-me';
-const LUISappName = 'change-me';
-const LUISendpoint = 'change-me';
-const LUISappCulture = 'en-us'; // dont need to change
-const LUISversionId = '0.1'; // dont need to change
-const LUISappId = 'change-me';
+const {
+  LUISauthoringKey,
+  LUISappName,
+  LUISendpoint,
+  LUISappCulture,
+  LUISversionId,
+  LUISappId,
+} = require('./config_LUIS.js');
+
 const googleSheetLocation = 'change-me';
 let intents = [];
-let questions = [];
+let questions = {};
 
 /* add utterances parameters */
 const configAddUtterances = {
@@ -23,15 +27,6 @@ const configAddUtterances = {
   uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/examples`,
 };
 
-/* create app parameters */
-const configCreateApp = {
-  LUISSubscriptionKey: LUISauthoringKey,
-  LUISversionId,
-  appName: LUISappName,
-  culture: LUISappCulture,
-  uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/`,
-};
-
 /* add intents parameters */
 const configAddIntents = {
   LUISSubscriptionKey: LUISauthoringKey,
@@ -41,7 +36,7 @@ const configAddIntents = {
   uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/intents`,
 };
 
-// Parse CSV, parameter is the address of the google sheet
+Parse CSV, parameter is the address of the google sheet
 parse(googleSheetLocation)
   .then(model => {
     // Save intent and questions names from parse
@@ -52,13 +47,11 @@ parse(googleSheetLocation)
   })
   .then(() => {
     // Add intents
-    configAddIntents.LUISappId = LUISappId;
     configAddIntents.intentList = intents;
     return addIntents(configAddIntents);
   })
   .then(() => {
     // Add example utterances to the intents in the app
-    configAddUtterances.LUISappId = LUISappId;
     configAddUtterances.intents = intents;
     configAddUtterances.questions = questions;
     return upload(configAddUtterances);

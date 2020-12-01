@@ -5,7 +5,8 @@
   "main": "add_intent_to_luis.js",
   "scripts": {
     "test": "npm test",
-    "start": "nodemon add_intent_to_luis.js"
+    "intent": "nodemon add_intent_to_luis.js",
+    "alias": "nodemon add_entities_list_to_luis.js"
   },
   "author": "youxuan jiang",
   "license": "ISC",

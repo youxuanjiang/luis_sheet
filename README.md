@@ -1,5 +1,4 @@
 # luis_sheet
-For adding intents and questions to AZURE LUIS from Google Sheet
 
 - [安裝 git](https://git-scm.com/book/zh-tw/v2/開始-Git-安裝教學)
 
@@ -15,7 +14,7 @@ git clone https://github.com/youxanjump/luis_sheet.git
 npm install
 ```
 
-- 修改 add_intent_to_luis.js (code中我有提示說哪裡要修改了)
+- 修改 config_LUIS.js (code中我有提示說哪裡要修改了)
 
 - [取得Google金鑰](https://console.developers.google.com)(要透過程式存取google表單他要認金鑰的)
   - 從google api建立一個app
@@ -30,8 +29,19 @@ npm install
   - 將最後出現的那個信箱加入google表單的共用
 
 - 新增一個檔案叫'cred.json'，並將金鑰貼進去
+### For adding intents and questions to AZURE LUIS from Google Sheet
+
+- 修改 add_intent_to_luis.js (code中我有提示說哪裡要修改了)
 
 - 執行程式
  ```shell
- npm run start
+ npm run intent
+```
+### For adding entities list and alias to AZURE LUIS from Google Sheet
+
+- 修改 add_entities_list_to_luis.js (code中我有提示說哪裡要修改了)
+
+- 執行程式
+ ```shell
+ npm run alias
 ```
