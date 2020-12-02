@@ -8,39 +8,41 @@ const maxRetry = 5;
 
 // retry request if error or 429 received
 const retryStrategy = async (err, response, r_section_a, r_section_b) => {
-  console.log(`${r_section_b.body.name}: ${response.statusCode}`);
+  console.log(`[${r_section_b.body.name}] statusCode is ${response.statusCode}`);
   const shouldRetry = err || response.statusCode >= 400;
   // console.log(r_section_b);
   if (shouldRetry){
     // When the entity has already created.
-    console.log(`Entity list \"${r_section_b.body.name}\" has already exsit.`);
+    console.log(`[${r_section_b.body.name}] Entity list has already exsit.`);
 
-    var jsonBody = {
-        "name": r_section_b.body.name,
-    };
-
-    console.log(`Get \"${r_section_b.body.name}\" id...`);
-    // To get the id of that entity.
-    let result = await request({
+    console.log(`[${r_section_b.body.name}] Get id...`);
+    const option = {
         url: r_section_b.url,
         fullResponse: false,
         method: 'GET',
         headers: r_section_b.headers,
-        json: true,
-        body: jsonBody,
-    });
-    console.log(`\"${r_section_b.body.name}\" id is ${result[0].id}`);
+    };
+    // To get the id of that entity.
+    const result_get = await request(option);
+    let id_get;
+    for(let i = 0; i < JSON.parse(result_get).length; i++){
+      // console.log(JSON.parse(result_get)[i]);
+      if(JSON.parse(result_get)[i].name == r_section_b.body.name){
+        id_get = JSON.parse(result_get)[i].id;
+      }
+    }
     // Delete it.
-    console.log(`deleting \"${r_section_b.body.name}\"...`);
-    const d_entity_uri = `${r_section_b.url}/${result[0].id}`;
+    console.log(`[${r_section_b.body.name}] Deleting ...`);
+    const d_entity_uri = `${r_section_b.url}/${id_get}`;
+    console.log(`[${r_section_b.body.name}] id is ${id_get}`);
     // console.log(d_entity_uri);
-    result = await request({
+    const result_del = await request({
         url: d_entity_uri,
         fullResponse: false,
         method: 'DELETE',
         headers: r_section_b.headers,
     });
-    console.log(`Updating \"${r_section_b.body.name}\"...`);
+    console.log(`[${r_section_b.body.name}] Updating...`);
   }
 
   return shouldRetry;
@@ -49,9 +51,9 @@ const retryStrategy = async (err, response, r_section_a, r_section_b) => {
 // Send JSON as the body of the POST request to the API
 var callAddEntity = async (options) => {
     try {
-        console.log(`uploading \"${options.body.name}\" to LUIS...`);
-        var response = await request(options);
-        console.log(`finish uploading \"${options.body.name}\" with response ${response}`);
+        console.log(`[${options.body.name}] uploading to LUIS...`);
+        const response = await request(options);
+        console.log(`[${options.body.name}] finish uploading with response ${response}`);
         return { response: response };
 
     } catch (err) {
@@ -61,7 +63,7 @@ var callAddEntity = async (options) => {
 
 // main function to call
 // Call add-entities
-var addEntities = (config) => {
+var addEntities = async (config) => {
     config.enrityHeaderList.forEach(async (header) => {
       const sublists = [];
       config.entityList[header].forEach(function (entity) {
@@ -74,7 +76,7 @@ var addEntities = (config) => {
                 "list": config.entityAlias,
               });
 
-              console.log(`${header}: ${entity} with alias ${config.entityAlias}.`);
+              console.log(`[${header}] ${entity} with alias ${config.entityAlias}.`);
 
           } catch (err) {
               console.log(`Error in addEntities:  ${err.message} `);
@@ -102,6 +104,7 @@ var addEntities = (config) => {
           retryStrategy: retryStrategy
       });
       let response = result;// await fse.writeJson(createResults.json, results);
+      // return response;
     }, this);
 }
 

@@ -25,11 +25,12 @@ var configAddEntities = {
 };
 
 parse(googleSheetLocation)
-  .then(model => {
+  .then(async (model) => {
     configAddEntities.enrityHeaderList = model.entity_header;
     configAddEntities.entityList = model.entities;
     configAddEntities.entityAliasList = model.alias;
-    return addEntities(configAddEntities);
+    console.log(`------------------------------------[parse done]-------------------------------------`);
+    return await addEntities(configAddEntities);
   })
   .catch(err => {
     console.log(err.message);

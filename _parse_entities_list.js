@@ -10,7 +10,7 @@ function listOfEntitiesAndAlias(rows, entity_header) {
   let tmp_entity;
   alias[entity_header] = {};
   entities[entity_header] = [];
-  console.log(rows.length);
+  // console.log(rows.length);
 
   for (const row of rows) {
 
@@ -58,7 +58,6 @@ const convert = async googleSheet => {
     entities,
     alias,
   };
-  console.log('parse done.');
   return model;
 };
 
