@@ -10,11 +10,7 @@ var no_err = true;
 
 // retry request if error or 429 received
 const retryStrategy = (err, response, r_section_a, r_section_b) => {
-  // console.log(`[${r_section_b.body.name}] statusCode is ${response.statusCode}`);
   const shouldRetry = err || response.statusCode >= 400;
-  // if (shouldRetry) {
-  //   console.log(`Retry intent ${r_section_b.body.name}...`);
-  // }
   return shouldRetry;
 };
 
@@ -22,7 +18,6 @@ const retryStrategy = (err, response, r_section_a, r_section_b) => {
 const callAddIntent = async options => {
   try {
     const intent = options.body.name;
-    // console.log(`starting adding ${intent} to LUIS...`);
     const response = await request(options);
 
     // Check if add intent to LUIS succeess or not
@@ -43,8 +38,9 @@ const callAddIntent = async options => {
 const addIntents = async config => {
   const intentPromise = [];
   console.log('\nStart adding intents...');
+  // 表單上的每個分頁
   config.intentHeaderList.forEach( header => {
-    // console.log('[', header,']: ',config.intentList[header]);
+    // 同一分頁中的每一個intent
     config.intentList[header].forEach( intent => {
       // JSON for the request body
       const jsonBody = {
@@ -63,7 +59,6 @@ const addIntents = async config => {
         retryDelay: delayMS,
         retryStrategy,
       }));
-      // console.log('[', header,']: ',config.intentList[header], 'DONE!');
     });
   });
 
@@ -71,8 +66,7 @@ const addIntents = async config => {
   if (no_err) {
     console.log('add intents done.');
   }
-
-  // console.log(`Success = ${succeed}\nFail = ${fail}\n`);
+  return no_err;
 };
 
 module.exports = addIntents;

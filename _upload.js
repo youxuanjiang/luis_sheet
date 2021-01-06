@@ -28,11 +28,9 @@ const getRequestInBatch = async (intentsAndQuestions) => {
 
   // 批次，每50個為一個批次，每一百個送一個request出去
   intentsAndQuestions.intentHeaderList.forEach( header => {
-    // console.log(`enter ${header}`);
     intentsAndQuestions.intentList[header].forEach(intent => {
-      // console.log(`enter ${intent}`);
+      // 每個intent中的範例問句
       intentsAndQuestions.questions[header][intent].forEach(question => {
-        // console.log(`enter ${question}`);
         page.push({
           text: question,
           intentName: intent,
@@ -105,7 +103,7 @@ const upload = async config => {
   if(no_err){
     console.log('upload done');
   }
-
+  return no_err;
   // console.log(`\n\nResults of all promises = ${JSON.stringify(results)}`);
 };
 

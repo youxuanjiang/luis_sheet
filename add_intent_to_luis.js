@@ -52,12 +52,12 @@ parse(googleSheetLocation)
     configAddIntents.intentList = intents;
     return addIntents(configAddIntents);
   })
-  .then(() => {
+  .then((if_no_err) => {
     // Add example utterances to the intents in the app
     configAddUtterances.intentHeaderList = intent_header;
     configAddUtterances.intentList = intents;
     configAddUtterances.questions = questions;
-    return upload(configAddUtterances);
+    if(if_no_err)return upload(configAddUtterances);
   })
   .catch(err => {
     console.log(err.message);
