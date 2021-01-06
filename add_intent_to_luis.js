@@ -11,10 +11,11 @@ const {
   LUISappCulture,
   LUISversionId,
   LUISappId,
+  googleSheetLocation,
 } = require('./config_LUIS.js');
 
-const googleSheetLocation = 'change-me';
-let intents = [];
+let intents = {};
+let intent_header = [];
 let questions = {};
 
 /* add utterances parameters */
@@ -23,7 +24,8 @@ const configAddUtterances = {
   LUISappId,
   LUISversionId,
   questions,
-  intents,
+  intentHeaderList: [],
+  intentList: [],
   uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/examples`,
 };
 
@@ -32,29 +34,29 @@ const configAddIntents = {
   LUISSubscriptionKey: LUISauthoringKey,
   LUISappId,
   LUISversionId,
-  intentList: intents,
+  intentHeaderList: [],
+  intentList: [],
   uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/intents`,
 };
 
-Parse CSV, parameter is the address of the google sheet
+// Parse CSV, parameter is the address of the google sheet
 parse(googleSheetLocation)
-  .then(model => {
+  .then(async (model) => {
     // Save intent and questions names from parse
+    intent_header = model.intent_header;
     intents = model.intents;
     questions = model.questions;
-    // console.log(intents);
-    // console.log(questions);
-  })
-  .then(() => {
     // Add intents
+    configAddIntents.intentHeaderList = intent_header;
     configAddIntents.intentList = intents;
-    return addIntents(configAddIntents);
+    await addIntents(configAddIntents);
   })
-  .then(() => {
+  .then(async() => {
     // Add example utterances to the intents in the app
-    configAddUtterances.intents = intents;
+    configAddUtterances.intentHeaderList = intent_header;
+    configAddUtterances.intentList = intents;
     configAddUtterances.questions = questions;
-    return upload(configAddUtterances);
+    await upload(configAddUtterances);
   })
   .catch(err => {
     console.log(err.message);

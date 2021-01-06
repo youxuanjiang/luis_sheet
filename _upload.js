@@ -4,15 +4,17 @@
 const request = require('requestretry');
 
 // time delay between requests
-const delayMS = 10000;
+const delayMS = 1000;
 
 // retry recount
-const maxRetry = 100;
+const maxRetry = 5;
+
+// check if get error when upload Questions
+var no_err = true;
 
 // retry request if error or 429 received
-const retryStrategy = (err, response) => {
-  const shouldRetry = err || response.statusCode === 429;
-  // if (shouldRetry) console.log('retrying add examples...');
+const retryStrategy = (err, response, r_section_a, r_section_b) => {
+  const shouldRetry = err || response.statusCode >= 400;
   return shouldRetry;
 };
 
@@ -22,23 +24,27 @@ const getRequestInBatch = intentsAndQuestions => {
   let page = [];
   let exampleId = 0;
 
-  console.log('Starting adding Questions...');
+  console.log('\nStarting adding Questions...');
+  // console.log(intentsAndQuestions.intentHeaderList);
 
-  // 批次，每100個為一個批次，每一百個送一個request出去
-  intentsAndQuestions.intents.forEach(intent => {
-    // console.log('enter intents for each');
-    intentsAndQuestions.questions[intent].forEach(question => {
-      // console.log('    enter question for each');
-      page.push({
-        text: question,
-        intentName: intent,
-        entityLabels: [],
-        ExampleId: (exampleId += 1),
+  // 批次，每50個為一個批次，每一百個送一個request出去
+  intentsAndQuestions.intentHeaderList.forEach( header => {
+    // console.log(`enter ${header}`);
+    intentsAndQuestions.intentList[header].forEach(intent => {
+      // console.log(`enter ${intent}`);
+      intentsAndQuestions.questions[header][intent].forEach(question => {
+        // console.log(`enter ${question}`);
+        page.push({
+          text: question,
+          intentName: intent,
+          entityLabels: [],
+          ExampleId: (exampleId += 1),
+        });
+        if (exampleId % 100 === 0) {
+          pages.push(page);
+          page = [];
+        }
       });
-      if (exampleId % 100 === 0) {
-        pages.push(page);
-        page = [];
-      }
     });
   });
 
@@ -53,27 +59,31 @@ const getRequestInBatch = intentsAndQuestions => {
 // send json batch as post.body to API
 const sendBatchToApi = async options => {
   const response = await request(options);
-  // console.log(`StatusCode: ${response.statusCode}`);
-  // console.log(options.body);
-  // return {page: options.body, response:response};
+  // Check if any error happened in this batch of questions (examples)
+  response.forEach( uttr => {
+      if(uttr.hasError){
+        console.log(uttr.value);
+        no_err = false;
+      }
+  });
   return { response };
 };
 
 // main function to call
 const upload = async config => {
   const uploadPromises = [];
-  const url = config.uri.replace('default_id', config.LUISappId);
 
   // 100 requests per batch
   const pages = getRequestInBatch({
-    intents: config.intents,
+    intentHeaderList: config.intentHeaderList,
+    intentList: config.intentList,
     questions: config.questions,
   });
 
   // load up promise array
-  pages.forEach(_page => {
-    const pagePromise = sendBatchToApi({
-      url,
+  pages.forEach(async (_page) => {
+    uploadPromises.push(sendBatchToApi({
+      url: config.uri,
       fullResponse: false,
       method: 'POST',
       headers: {
@@ -84,16 +94,15 @@ const upload = async config => {
       maxAttempts: maxRetry,
       retryDelay: delayMS,
       retryStrategy,
-    });
-
-    uploadPromises.push(pagePromise);
+    }));
+    //console.log(_page);
   });
 
   // execute promise array
 
   await Promise.all(uploadPromises);
   // console.log(`\n\nResults of all promises = ${JSON.stringify(results)}`);
-  console.log('upload done');
+  if(no_err)console.log('upload done');
 };
 
 module.exports = upload;

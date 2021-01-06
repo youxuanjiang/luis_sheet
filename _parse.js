@@ -4,17 +4,21 @@ const { promisify } = require('util');
 // Check: https://sites.google.com/jes.mlc.edu.tw/ljj/linebot實做/申請google-sheet-api
 const creds = require('./cred.json');
 
-function listOfIntentsAndQuestions(rows) {
-  const questions = {};
-  const intents = [];
-  console.log(rows.length);
+function listOfIntentsAndQuestions(rows, intent_header) {
+  let questions = {};
+  let intents = {};
+  let tmp_intent;
+  questions[intent_header] = {};
+  intents[intent_header] = [];
+
   for (const row of rows) {
-    if(row.intent != ''){
-      intents.push(row.intent);
-      questions[row.intent] = [];
-      questions[intents[intents.length - 1]].push(row.question);
+    if(row.Intent != ''){
+      tmp_intent = row.Intent;
+      intents[intent_header].push(row.Intent);
+      questions[intent_header][row.Intent] = [];
+      questions[intent_header][row.Intent].push(row.question);
     }else{
-      questions[intents[intents.length - 1]].push(row.question);
+      questions[intent_header][tmp_intent].push(row.question);
     }
   }
   return { intents, questions };
@@ -31,20 +35,23 @@ const convert = async googleSheet => {
   // console.log(sheetLength);
 
   console.log('Start parsing Google Sheet...');
-  const intents = [];
+  let intent_header = [];
+  let intents = {};
   let questions = {};
 
   for (let i = 0; i < sheetLength; i += 1) {
-    //console.log(sheet[i]);
     const rows = await sheet[i].getRows();
-    const listedIntentsAndQuestions = listOfIntentsAndQuestions(rows);
+    const listedIntentsAndQuestions = listOfIntentsAndQuestions(rows, sheet[i]._rawProperties.title);
+    
+    intent_header.push(sheet[i]._rawProperties.title);
     questions = merge(questions, listedIntentsAndQuestions.questions);
-    intents.push.apply(intents, listedIntentsAndQuestions.intents);
+    intents = merge(intents, listedIntentsAndQuestions.intents);
   }
 
   const model = {
     intents,
     questions,
+    intent_header,
   };
   console.log('parse done.');
   return model;
