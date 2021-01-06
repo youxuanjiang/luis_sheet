@@ -5,13 +5,16 @@ const delayMS = 1000;
 // retry recount
 const maxRetry = 5;
 
+// check if get error when upload intents
+var no_err = true;
+
 // retry request if error or 429 received
 const retryStrategy = (err, response, r_section_a, r_section_b) => {
   // console.log(`[${r_section_b.body.name}] statusCode is ${response.statusCode}`);
   const shouldRetry = err || response.statusCode >= 400;
-  if (shouldRetry) {
-    console.log(`Retry intent ${r_section_b.body.name}...`);
-  }
+  // if (shouldRetry) {
+  //   console.log(`Retry intent ${r_section_b.body.name}...`);
+  // }
   return shouldRetry;
 };
 
@@ -21,14 +24,10 @@ const callAddIntent = async options => {
     const intent = options.body.name;
     // console.log(`starting adding ${intent} to LUIS...`);
     const response = await request(options);
-    if (response.statusCode < 400) {
-      // await suc();
-      console.log(
-       `intent ${intent} succeed with status code  ${response.statusCode}`
-      );
-      // console.log(`The number of request attempts: ${response.attempts}\n`);
-    } else if (response.statusCode >= 400) {
-      // await fai();
+
+    // Check if add intent to LUIS succeess or not
+    if (response.statusCode >= 400) {
+      no_err = false;
       console.log(
         `intent ${intent} fail with status code  ${response.statusCode}`
       );
@@ -41,11 +40,11 @@ const callAddIntent = async options => {
 };
 
 // Call add-intents
-const addIntents = async(config) => {
+const addIntents = async config => {
   const intentPromise = [];
   console.log('\nStart adding intents...');
   config.intentHeaderList.forEach( header => {
-    console.log('[', header,']: ',config.intentList[header]);
+    // console.log('[', header,']: ',config.intentList[header]);
     config.intentList[header].forEach( intent => {
       // JSON for the request body
       const jsonBody = {
@@ -67,7 +66,12 @@ const addIntents = async(config) => {
       // console.log('[', header,']: ',config.intentList[header], 'DONE!');
     });
   });
-  await Promise.all(intentPromise);
+
+  await Promise.all(intentPromise)
+  if (no_err) {
+    console.log('add intents done.');
+  }
+
   // console.log(`Success = ${succeed}\nFail = ${fail}\n`);
 };
 

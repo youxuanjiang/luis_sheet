@@ -18,13 +18,12 @@ const retryStrategy = (err, response, r_section_a, r_section_b) => {
   return shouldRetry;
 };
 
-const getRequestInBatch = intentsAndQuestions => {
+const getRequestInBatch = async (intentsAndQuestions) => {
   // break items into pages to fit max batch size
   const pages = [];
   let page = [];
   let exampleId = 0;
 
-  console.log('\nStarting adding Questions...');
   // console.log(intentsAndQuestions.intentHeaderList);
 
   // 批次，每50個為一個批次，每一百個送一個request出去
@@ -60,9 +59,9 @@ const getRequestInBatch = intentsAndQuestions => {
 const sendBatchToApi = async options => {
   const response = await request(options);
   // Check if any error happened in this batch of questions (examples)
-  response.forEach( uttr => {
+  response.forEach(uttr => {
       if(uttr.hasError){
-        console.log(uttr.value);
+        console.log(`Question ${uttr.value} fail`);
         no_err = false;
       }
   });
@@ -74,14 +73,16 @@ const upload = async config => {
   const uploadPromises = [];
 
   // 100 requests per batch
-  const pages = getRequestInBatch({
+  const pages = await getRequestInBatch({
     intentHeaderList: config.intentHeaderList,
     intentList: config.intentList,
     questions: config.questions,
   });
 
+  console.log('\nStarting adding Questions...');
+
   // load up promise array
-  pages.forEach(async (_page) => {
+  pages.forEach( _page => {
     uploadPromises.push(sendBatchToApi({
       url: config.uri,
       fullResponse: false,
@@ -100,9 +101,12 @@ const upload = async config => {
 
   // execute promise array
 
-  await Promise.all(uploadPromises);
+  await Promise.all(uploadPromises)
+  if(no_err){
+    console.log('upload done');
+  }
+
   // console.log(`\n\nResults of all promises = ${JSON.stringify(results)}`);
-  if(no_err)console.log('upload done');
 };
 
 module.exports = upload;

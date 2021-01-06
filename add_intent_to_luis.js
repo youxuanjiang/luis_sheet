@@ -40,8 +40,9 @@ const configAddIntents = {
 };
 
 // Parse CSV, parameter is the address of the google sheet
+
 parse(googleSheetLocation)
-  .then(async (model) => {
+  .then(model => {
     // Save intent and questions names from parse
     intent_header = model.intent_header;
     intents = model.intents;
@@ -49,14 +50,14 @@ parse(googleSheetLocation)
     // Add intents
     configAddIntents.intentHeaderList = intent_header;
     configAddIntents.intentList = intents;
-    await addIntents(configAddIntents);
+    return addIntents(configAddIntents);
   })
-  .then(async() => {
+  .then(() => {
     // Add example utterances to the intents in the app
     configAddUtterances.intentHeaderList = intent_header;
     configAddUtterances.intentList = intents;
     configAddUtterances.questions = questions;
-    await upload(configAddUtterances);
+    return upload(configAddUtterances);
   })
   .catch(err => {
     console.log(err.message);
