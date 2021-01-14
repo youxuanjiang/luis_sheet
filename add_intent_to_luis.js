@@ -1,6 +1,6 @@
-const parse = require('./_parse');
-const addIntents = require('./_intent');
-const upload = require('./_upload');
+const parse = require('./util/for_intents/_parse');
+const addIntents = require('./util/for_intents/_intent');
+const upload = require('./util/for_intents/_upload');
 
 
 // LUIS Configure
@@ -23,9 +23,10 @@ const configAddUtterances = {
   LUISSubscriptionKey: LUISauthoringKey,
   LUISappId,
   LUISversionId,
-  questions,
+  LUISendpoint,
+  questions: {},
   intentHeaderList: [],
-  intentList: [],
+  intentList: {},
   uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/examples`,
 };
 
@@ -34,6 +35,7 @@ const configAddIntents = {
   LUISSubscriptionKey: LUISauthoringKey,
   LUISappId,
   LUISversionId,
+  LUISendpoint,
   intentHeaderList: [],
   intentList: [],
   uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/intents`,

@@ -2,7 +2,7 @@ const { GoogleSpreadsheet } = require('google-spreadsheet');
 const merge = require('deepmerge');
 const { promisify } = require('util');
 // Check: https://sites.google.com/jes.mlc.edu.tw/ljj/linebot實做/申請google-sheet-api
-const creds = require('./cred.json');
+const creds = require('../../cred.json');
 
 function listOfEntitiesAndAlias(rows, entity_header) {
   let alias = {};
