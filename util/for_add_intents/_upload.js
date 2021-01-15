@@ -10,10 +10,10 @@ const delayMS = 1000;
 const maxRetry = 5;
 
 // check if get error when upload Questions
-var no_err = true;
+let no_err = true;
 
 // retry request if error or 429 received
-const retryStrategy = (err, response, r_section_a, r_section_b) => {
+const retryStrategy = (err, response) => {
   const shouldRetry = err || response.statusCode >= 400;
   return shouldRetry;
 };
@@ -27,10 +27,10 @@ const getRequestInBatch = async (intentsAndQuestions) => {
   // console.log(intentsAndQuestions.intentHeaderList);
 
   // 批次，每50個為一個批次，每一百個送一個request出去
-  intentsAndQuestions.intentHeaderList.forEach( header => {
-    intentsAndQuestions.intentList[header].forEach(intent => {
+  intentsAndQuestions.intentHeaderList.forEach((header) => {
+    intentsAndQuestions.intentList[header].forEach((intent) => {
       // 每個intent中的範例問句
-      intentsAndQuestions.questions[header][intent].forEach(question => {
+      intentsAndQuestions.questions[header][intent].forEach((question) => {
         page.push({
           text: question,
           intentName: intent,
@@ -54,20 +54,20 @@ const getRequestInBatch = async (intentsAndQuestions) => {
 };
 
 // send json batch as post.body to API
-const sendBatchToApi = async options => {
+const sendBatchToApi = async (options) => {
   const response = await request(options);
   // Check if any error happened in this batch of questions (examples)
-  response.forEach(uttr => {
-      if(uttr.hasError){
-        console.log(`Question ${uttr.value} fail`);
-        no_err = false;
-      }
+  response.forEach((uttr) => {
+    if (uttr.hasError) {
+      console.log(`Question ${uttr.value} fail`);
+      no_err = false;
+    }
   });
-  return { response };
+  return {response};
 };
 
 // main function to call
-const upload = async config => {
+const upload = async (config) => {
   const uploadPromises = [];
 
   // 100 requests per batch
@@ -80,7 +80,7 @@ const upload = async config => {
   console.log('\nStarting adding Questions...');
 
   // load up promise array
-  pages.forEach( _page => {
+  pages.forEach((_page) => {
     uploadPromises.push(sendBatchToApi({
       url: config.uri,
       fullResponse: false,
@@ -94,13 +94,13 @@ const upload = async config => {
       retryDelay: delayMS,
       retryStrategy,
     }));
-    //console.log(_page);
+    // console.log(_page);
   });
 
   // execute promise array
 
-  await Promise.all(uploadPromises)
-  if(no_err){
+  await Promise.all(uploadPromises);
+  if (no_err) {
     console.log('upload done');
   }
   return no_err;

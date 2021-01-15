@@ -6,16 +6,16 @@ const delayMS = 1000;
 const maxRetry = 5;
 
 // check if get error when upload intents
-var no_err = true;
+let no_err = true;
 
 // retry request if error or 429 received
-const retryStrategy = (err, response, r_section_a, r_section_b) => {
+const retryStrategy = (err, response) => {
   const shouldRetry = err || response.statusCode >= 400;
   return shouldRetry;
 };
 
 // Send JSON as the body of the POST request to the API
-const callAddIntent = async options => {
+const callAddIntent = async (options) => {
   try {
     const intent = options.body.name;
     const response = await request(options);
@@ -24,7 +24,7 @@ const callAddIntent = async options => {
     if (response.statusCode >= 400) {
       no_err = false;
       console.log(
-        `intent ${intent} fail with status code  ${response.statusCode}`
+          `intent ${intent} fail with status code  ${response.statusCode}`,
       );
     }
     return response;
@@ -35,13 +35,13 @@ const callAddIntent = async options => {
 };
 
 // Call add-intents
-const addIntents = async config => {
+const addIntents = async (config) => {
   const intentPromise = [];
   console.log('\nStart adding intents...');
   // 表單上的每個分頁
-  config.intentHeaderList.forEach( header => {
+  config.intentHeaderList.forEach((header) => {
     // 同一分頁中的每一個intent
-    config.intentList[header].forEach( intent => {
+    config.intentList[header].forEach((intent) => {
       // JSON for the request body
       const jsonBody = {
         name: intent,
@@ -62,7 +62,7 @@ const addIntents = async config => {
     });
   });
 
-  await Promise.all(intentPromise)
+  await Promise.all(intentPromise);
   if (no_err) {
     console.log('add intents done.');
   }

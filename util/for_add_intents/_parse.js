@@ -1,30 +1,29 @@
-const { GoogleSpreadsheet } = require('google-spreadsheet');
+const {GoogleSpreadsheet} = require('google-spreadsheet');
 const merge = require('deepmerge');
-const { promisify } = require('util');
 // Check: https://sites.google.com/jes.mlc.edu.tw/ljj/linebot實做/申請google-sheet-api
 const creds = require('../../cred.json');
 
-function listOfIntentsAndQuestions(rows, intent_header) {
-  let questions = {};
-  let intents = {};
+const listOfIntentsAndQuestions = (rows, intent_header) => {
+  const questions = {};
+  const intents = {};
   let tmp_intent;
   questions[intent_header] = {};
   intents[intent_header] = [];
 
   for (const row of rows) {
-    if(row.Intent != ''){
+    if (row.Intent != '') {
       tmp_intent = row.Intent;
       intents[intent_header].push(row.Intent);
       questions[intent_header][row.Intent] = [];
       questions[intent_header][row.Intent].push(row.question);
-    }else{
+    } else {
       questions[intent_header][tmp_intent].push(row.question);
     }
   }
-  return { intents, questions };
+  return {intents, questions};
 }
 
-const convert = async googleSheet => {
+const convert = async (googleSheet) => {
   const doc = new GoogleSpreadsheet(googleSheet);
   await doc.useServiceAccountAuth(creds);
   await doc.loadInfo();
@@ -35,7 +34,7 @@ const convert = async googleSheet => {
   // console.log(sheetLength);
 
   console.log('Start parsing Google Sheet...');
-  let intent_header = [];
+  const intent_header = [];
   let intents = {};
   let questions = {};
 

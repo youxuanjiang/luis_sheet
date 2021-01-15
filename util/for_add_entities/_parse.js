@@ -1,32 +1,30 @@
-const { GoogleSpreadsheet } = require('google-spreadsheet');
+const {GoogleSpreadsheet} = require('google-spreadsheet');
 const merge = require('deepmerge');
-const { promisify } = require('util');
 // Check: https://sites.google.com/jes.mlc.edu.tw/ljj/linebot實做/申請google-sheet-api
 const creds = require('../../cred.json');
 
-function listOfEntitiesAndAlias(rows, entity_header) {
-  let alias = {};
-  let entities = {};
+const listOfEntitiesAndAlias = (rows, entity_header) => {
+  const alias = {};
+  const entities = {};
   let tmp_entity;
   alias[entity_header] = {};
   entities[entity_header] = [];
   // console.log(rows.length);
 
   for (const row of rows) {
-
-    if(row.entity != ''){
+    if (row.entity != '') {
       tmp_entity = row.entity;
       entities[entity_header].push(row.entity);
       alias[entity_header][row.entity] = [];
       alias[entity_header][row.entity].push(row.alias);
-    }else{
+    } else {
       alias[entity_header][tmp_entity].push(row.alias);
     }
   }
-  return { entities, alias };
+  return {entities, alias};
 }
 
-const convert = async googleSheet => {
+const convert = async (googleSheet) => {
   const doc = new GoogleSpreadsheet(googleSheet);
   await doc.useServiceAccountAuth(creds);
   await doc.loadInfo();

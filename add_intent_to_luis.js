@@ -1,14 +1,11 @@
-const parse = require('./util/for_intents/_parse');
-const addIntents = require('./util/for_intents/_intent');
-const upload = require('./util/for_intents/_upload');
-
+const parse = require('./util/for_add_intents/_parse');
+const addIntents = require('./util/for_add_intents/_intent');
+const upload = require('./util/for_add_intents/_upload');
 
 // LUIS Configure
 const {
   LUISauthoringKey,
-  LUISappName,
   LUISendpoint,
-  LUISappCulture,
   LUISversionId,
   LUISappId,
   googleSheetLocation,
@@ -44,23 +41,23 @@ const configAddIntents = {
 // Parse CSV, parameter is the address of the google sheet
 
 parse(googleSheetLocation)
-  .then(model => {
+    .then((model) => {
     // Save intent and questions names from parse
-    intent_header = model.intent_header;
-    intents = model.intents;
-    questions = model.questions;
-    // Add intents
-    configAddIntents.intentHeaderList = intent_header;
-    configAddIntents.intentList = intents;
-    return addIntents(configAddIntents);
-  })
-  .then((if_no_err) => {
+      intent_header = model.intent_header;
+      intents = model.intents;
+      questions = model.questions;
+      // Add intents
+      configAddIntents.intentHeaderList = intent_header;
+      configAddIntents.intentList = intents;
+      return addIntents(configAddIntents);
+    })
+    .then((if_no_err) => {
     // Add example utterances to the intents in the app
-    configAddUtterances.intentHeaderList = intent_header;
-    configAddUtterances.intentList = intents;
-    configAddUtterances.questions = questions;
-    if(if_no_err)return upload(configAddUtterances);
-  })
-  .catch(err => {
-    console.log(err.message);
-  });
+      configAddUtterances.intentHeaderList = intent_header;
+      configAddUtterances.intentList = intents;
+      configAddUtterances.questions = questions;
+      if (if_no_err) return upload(configAddUtterances);
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });

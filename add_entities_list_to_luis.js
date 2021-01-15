@@ -1,12 +1,10 @@
-const parse = require('./util/for_entities/_parse');
-const addEntities = require('./util/for_entities/_entity_list');
+const parse = require('./util/for_add_entities/_parse');
+const addEntities = require('./util/for_add_entities/_entity_list');
 
 // LUIS Configure
 const {
   LUISauthoringKey,
-  LUISappName,
   LUISendpoint,
-  LUISappCulture,
   LUISversionId,
   LUISappId,
 } = require('./config_LUIS.js');
@@ -14,7 +12,7 @@ const {
 const googleSheetLocation = '1N3WnrBEFJA2-EzPBPaZfAChS4Rc3oQeBOG3gyHPWkwk';
 
 /* add entities parameters */
-var configAddEntities = {
+const configAddEntities = {
   LUISSubscriptionKey: LUISauthoringKey,
   LUISappId,
   LUISversionId,
@@ -25,13 +23,13 @@ var configAddEntities = {
 };
 
 parse(googleSheetLocation)
-  .then(model => {
-    configAddEntities.enrityHeaderList = model.entity_header;
-    configAddEntities.entityList = model.entities;
-    configAddEntities.entityAliasList = model.alias;
-    console.log(`------------------------------------[parse done]-------------------------------------`);
-    return addEntities(configAddEntities);
-  })
-  .catch(err => {
-    console.log(err.message);
-  });
+    .then((model) => {
+      configAddEntities.enrityHeaderList = model.entity_header;
+      configAddEntities.entityList = model.entities;
+      configAddEntities.entityAliasList = model.alias;
+      console.log('------------------------------------[parse done]-------------------------------------');
+      return addEntities(configAddEntities);
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
