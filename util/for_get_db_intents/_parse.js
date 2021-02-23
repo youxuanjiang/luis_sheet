@@ -7,6 +7,7 @@ const creds = require('../../cred.json');
 const listOfIntentsAndQuestions = (rows) => {
   try {
     const questions = [];
+    const intents = [];
     const informations = {};
     let tmp_intent;
 
@@ -16,6 +17,7 @@ const listOfIntentsAndQuestions = (rows) => {
         questions.push(row.question);
         informations[row.Intent] = [];
         informations[row.Intent].push(row.information);
+        intents.push(tmp_intent);
         // console.log(informations[row.Intent]);
       } else {
         questions.push(row.question);
@@ -27,6 +29,7 @@ const listOfIntentsAndQuestions = (rows) => {
     }
     return {
       questions,
+      intents,
       informations,
     };
   } catch (err) {
@@ -47,17 +50,20 @@ const convert = async (googleSheet) => {
 
     console.log('Start parsing Google Sheet...');
     let questions = [];
+    let intents = [];
     let informations = {};
 
     for (let i = 0; i < sheetLength; i += 1) {
       const rows = await sheet[i].getRows();
       const listedIntentsAndQuestions = listOfIntentsAndQuestions(rows);
       questions = questions.concat(listedIntentsAndQuestions.questions);
+      intents = intents.concat(listedIntentsAndQuestions.intents);
       informations = merge(informations, listedIntentsAndQuestions.informations);
     }
 
     const model = {
       questions,
+      intents,
       informations,
     };
     console.log('parse done.');

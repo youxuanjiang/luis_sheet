@@ -10,7 +10,7 @@ let no_err = true;
 
 // retry request if error or 429 received
 const retryStrategy = (err, response) => {
-  const shouldRetry = err || response.statusCode >= 400;
+  const shouldRetry = err || response.statusCode > 400;
   return shouldRetry;
 };
 
@@ -21,8 +21,12 @@ const callAddIntent = async (options) => {
     const response = await request(options);
 
     // Check if add intent to LUIS succeess or not
-    if (response.statusCode >= 400) {
+    if (response.statusCode > 400) {
       no_err = false;
+      console.log(
+          `intent ${intent} fail with status code  ${response.statusCode}`,
+      );
+    }else if (response.statusCode == 400) {
       console.log(
           `intent ${intent} fail with status code  ${response.statusCode}`,
       );

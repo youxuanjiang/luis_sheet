@@ -1,6 +1,5 @@
 // node 7.x
 // uses async/await - promises
-
 const request = require('requestretry');
 
 // time delay between requests
@@ -9,12 +8,12 @@ const delayMS = 1000;
 // retry recount
 const maxRetry = 5;
 
-// check if get error when upload Questions
 let no_err = true;
 
 // retry request if error or 429 received
-const retryStrategy = (err, response) => {
+const retryStrategy = (err, response, r_section_a, r_section_b) => {
   const shouldRetry = err || response.statusCode >= 400;
+  // console.log(r_section_b);
   return shouldRetry;
 };
 
@@ -56,6 +55,7 @@ const getRequestInBatch = async (intentsAndQuestions) => {
 // send json batch as post.body to API
 const sendBatchToApi = async (options) => {
   const response = await request(options);
+  // console.log(response);
   // Check if any error happened in this batch of questions (examples)
   response.forEach((uttr) => {
     if (uttr.hasError) {
@@ -69,7 +69,6 @@ const sendBatchToApi = async (options) => {
 // main function to call
 const upload = async (config) => {
   const uploadPromises = [];
-
   // 100 requests per batch
   const pages = await getRequestInBatch({
     intentHeaderList: config.intentHeaderList,
@@ -78,7 +77,7 @@ const upload = async (config) => {
   });
 
   console.log('\nStarting adding Questions...');
-
+  // console.log(pages);
   // load up promise array
   pages.forEach((_page) => {
     uploadPromises.push(sendBatchToApi({
@@ -86,6 +85,7 @@ const upload = async (config) => {
       fullResponse: false,
       method: 'POST',
       headers: {
+        // "Content-Type": "application/json",
         'Ocp-Apim-Subscription-Key': config.LUISSubscriptionKey,
       },
       json: true,
@@ -98,7 +98,6 @@ const upload = async (config) => {
   });
 
   // execute promise array
-
   await Promise.all(uploadPromises);
   if (no_err) {
     console.log('upload done');

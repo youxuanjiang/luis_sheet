@@ -2,6 +2,8 @@ const queryString = require('querystring');
 const parse = require('./util/for_get_db_intents/_parse');
 const getDBIntents = require('./util/for_get_db_intents/_get_db_intents');
 
+// const questionIntentPair = {};
+
 // LUIS Configure
 const {
   LUISstagingSlotKey, // For Staging State LUIS tool
@@ -46,9 +48,9 @@ const get_DB_intents_from_sheet = async () => {
   const {questions} = model;
   const questionBatchs = [];
   let questionBatch = [];
-  // const questionIntentPair = {};
+  const questionIntentPair = {};
   // For test specific question
-  // getDBIntents(new ConfigGetDBIntent('如何透過甄試入學進入資管所碩士班').getConfig(), informations);
+  // getDBIntents(new ConfigGetDBIntent('圖書館書籍續借').getConfig(), informations);
   // 每12個queation作為一個批次
   let batchIndex = 0;
   questions.forEach((question) => {
@@ -68,12 +70,14 @@ const get_DB_intents_from_sheet = async () => {
   // 批次的去送出request
   for (let i = 0; i < questionBatchs.length; i++) {
     // forEach能平行的去跑
-    questionBatchs[i].forEach((question) => {
+    questionBatchs[i].forEach(async (question) => {
       // console.log(question);
       // input: query question, return: precise intent
-      getDBIntents(new ConfigGetDBIntent(question).getConfig(), informations);
+      questionIntentPair.intent = await getDBIntents(new ConfigGetDBIntent(question).getConfig(), informations);
+      questionIntentPair.question = question;
+      console.log(questionIntentPair);
     });
-    await sleep(3000);
+    await sleep(5000);
   }
 };
 

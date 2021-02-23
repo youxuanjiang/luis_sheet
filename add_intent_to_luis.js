@@ -8,7 +8,7 @@ const {
   LUISendpoint,
   LUISversionId,
   LUISappId,
-  googleSheetLocation,
+  googleSheetForIntent,
 } = require('./config_LUIS.js');
 
 let intents = {};
@@ -40,19 +40,20 @@ const configAddIntents = {
 
 // Parse CSV, parameter is the address of the google sheet
 
-parse(googleSheetLocation)
+parse(googleSheetForIntent)
     .then((model) => {
-    // Save intent and questions names from parse
+      // Save intent and questions names from parse
       intent_header = model.intent_header;
       intents = model.intents;
       questions = model.questions;
+      // console.log("%j", questions);
       // Add intents
       configAddIntents.intentHeaderList = intent_header;
       configAddIntents.intentList = intents;
       return addIntents(configAddIntents);
     })
     .then((if_no_err) => {
-    // Add example utterances to the intents in the app
+      // Add example utterances to the intents in the app
       configAddUtterances.intentHeaderList = intent_header;
       configAddUtterances.intentList = intents;
       configAddUtterances.questions = questions;

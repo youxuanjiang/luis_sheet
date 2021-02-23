@@ -7,9 +7,8 @@ const {
   LUISendpoint,
   LUISversionId,
   LUISappId,
+  googleSheetForEntity,
 } = require('./config_LUIS.js');
-
-const googleSheetLocation = '1N3WnrBEFJA2-EzPBPaZfAChS4Rc3oQeBOG3gyHPWkwk';
 
 /* add entities parameters */
 const configAddEntities = {
@@ -22,7 +21,7 @@ const configAddEntities = {
   uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/closedlists`,
 };
 
-parse(googleSheetLocation)
+parse(googleSheetForEntity)
     .then((model) => {
       configAddEntities.enrityHeaderList = model.entity_header;
       configAddEntities.entityList = model.entities;

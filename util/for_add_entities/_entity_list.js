@@ -8,14 +8,14 @@ const maxRetry = 5;
 
 // retry request if error or 429 received
 const retryStrategy = async (err, response, r_section_a, r_section_b) => {
-  console.log(`[${r_section_b.body.name}] statusCode is ${response.statusCode}`);
+  if(response.statusCode === 201)console.log(`[${r_section_b.body.name}] statusCode is ${response.statusCode}`);
   const shouldRetry = err || response.statusCode >= 400;
   // console.log(r_section_b);
-  if (shouldRetry) {
+  if (response.statusCode === 400) {
     // When the entity has already created.
-    console.log(`[${r_section_b.body.name}] Entity list has already exsit.`);
+    // console.log(`[${r_section_b.body.name}] Entity list has already exsit.`);
 
-    console.log(`[${r_section_b.body.name}] Get id...`);
+    // console.log(`[${r_section_b.body.name}] Get id...`);
     const option = {
       url: r_section_b.url,
       fullResponse: false,
@@ -32,9 +32,9 @@ const retryStrategy = async (err, response, r_section_a, r_section_b) => {
       }
     }
     // Delete it.
-    console.log(`[${r_section_b.body.name}] Deleting ...`);
+    // console.log(`[${r_section_b.body.name}] Deleting ...`);
     const d_entity_uri = `${r_section_b.url}/${id_get}`;
-    console.log(`[${r_section_b.body.name}] id is ${id_get}`);
+    // console.log(`[${r_section_b.body.name}] id is ${id_get}`);
     // console.log(d_entity_uri);
     await request({
       url: d_entity_uri,
@@ -42,7 +42,7 @@ const retryStrategy = async (err, response, r_section_a, r_section_b) => {
       method: 'DELETE',
       headers: r_section_b.headers,
     });
-    console.log(`[${r_section_b.body.name}] Updating...`);
+    // console.log(`[${r_section_b.body.name}] Updating...`);
   }
 
   return shouldRetry;
@@ -75,7 +75,7 @@ const addEntities = async (config) => {
           list: config.entityAlias,
         });
 
-        console.log(`[${header}] ${entity} with alias ${config.entityAlias}.`);
+        // console.log(`[${header}] ${entity} with alias ${config.entityAlias}.`);
       } catch (err) {
         console.log(`Error in addEntities:  ${err.message} `);
         // throw err;
