@@ -23,4 +23,5 @@ module.exports = {
   googleSheetForEntity,
   googleSheetForTest,
   googleSheetForAnswer,
+  googleSheetForInformation,
 };
