@@ -89,6 +89,8 @@ const getDBIntents = async (options, informations) => {
     if(db_intent.entities[`${db_intent.topIntent}所需資訊`] !== undefined){
       dbIntentList = await callGetDBIntents(options, db_intent.entities[`${db_intent.topIntent}所需資訊`][0], informations[db_intent.topIntent], `${db_intent.topIntent}所需資訊`);
     }
+    if(db_intent.topIntent == '學校各部門連絡方式')
+      return`♥${db_intent.topIntent}${dbIntentList}`;
     return `${db_intent.topIntent}${dbIntentList}`;
     // console.log(`${options.question}: ${db_intent.topIntent}${dbIntentList}`);
   } catch (err) {
