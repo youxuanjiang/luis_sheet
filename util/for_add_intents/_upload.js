@@ -33,7 +33,7 @@ const getRequestInBatch = async (intentsAndQuestions) => {
         page.push({
           text: question,
           intentName: intent,
-          entityLabels: [],
+          entityLabels: intentsAndQuestions.entityLabels[question],
           ExampleId: (exampleId += 1),
         });
         if (exampleId % 100 === 0) {
@@ -74,6 +74,7 @@ const upload = async (config) => {
     intentHeaderList: config.intentHeaderList,
     intentList: config.intentList,
     questions: config.questions,
+    entityLabels: config.entityLabels,
   });
 
   console.log('\nStarting adding Questions...');

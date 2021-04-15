@@ -14,6 +14,8 @@ const {
 let intents = {};
 let intent_header = [];
 let questions = {};
+let entity_name = {};
+let entity_labels = {};
 
 /* add utterances parameters */
 const configAddUtterances = {
@@ -24,6 +26,7 @@ const configAddUtterances = {
   questions: {},
   intentHeaderList: [],
   intentList: {},
+  entityLabels: {},
   uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/examples`,
 };
 
@@ -46,6 +49,9 @@ parse(googleSheetForIntent)
       intent_header = model.intent_header;
       intents = model.intents;
       questions = model.questions;
+      entity_name = model.entity_name;
+      entity_labels = model.entity_labels;
+      // console.log(entity_labels);
       // console.log("%j", questions);
       // Add intents
       configAddIntents.intentHeaderList = intent_header;
@@ -57,6 +63,7 @@ parse(googleSheetForIntent)
       configAddUtterances.intentHeaderList = intent_header;
       configAddUtterances.intentList = intents;
       configAddUtterances.questions = questions;
+      configAddUtterances.entityLabels = entity_labels;
       if (if_no_err) return upload(configAddUtterances);
     })
     .catch((err) => {

@@ -1,4 +1,6 @@
 const request = require('requestretry');
+const fs = require('fs');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 // LUIS configExportLUISure
 const {
   LUISauthoringKey,
@@ -10,6 +12,16 @@ const {
 const jsonBody = {
   format: "json",
 }
+
+const csv_data = [];
+const csvWriter = createCsvWriter({
+  path: 'intent_utterances.csv',
+  header: [
+    {id: 'intent', title: 'Intent'},
+    {id: 'utterance', title: 'Utterance'},
+  ]
+});
+
 // time delay between requests
 const delayMS = 1000;
 // retry recount
@@ -39,5 +51,18 @@ request({
   retryDelay: delayMS,
   retryStrategy,
 }).then((response) => {
-    console.log(response);
+    fs.writeFileSync('luis.json',JSON.stringify(response));
 });
+
+const luisFile = fs.readFileSync('luis.json');
+const intentUtter = JSON.parse(luisFile).body.utterances;
+fs.writeFileSync('utter.json',JSON.stringify(intentUtter));
+// let utter = {};
+intentUtter.forEach((data) => {
+  // if(utter[data.intent] == undefined){
+  //   utter[data.intent] = [];
+  // }
+  // utter[data.intent].push(data.text);
+  csv_data.push({intent: data.intent, utterance: data.text});
+});
+csvWriter.writeRecords(csv_data);
