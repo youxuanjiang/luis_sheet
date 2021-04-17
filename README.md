@@ -45,17 +45,22 @@ npm install
 - 修改 config_LUIS.js 中的 googleSheetForIntent 變數，貼上你的Sheet Location
 - 執行程式
  ```shell
- npm run intent
+ npm run luis-intent
 ```
-- information跟Answer只是輔助用的欄位，總之Intent跟Question這兩個欄位一定要有，且務必遵循圖片之格式
-
-![image](https://github.com/youxanjump/luis_sheet/blob/master/截圖%202021-02-23%20下午10.38.55.png)
+![image](https://github.com/youxanjump/luis_sheet/blob/master/截圖%202021-04-17%20下午3.18.11.png)
+- 上圖範例之格式務必跟著
+- 隨意開頭到隨意結尾間共有四個Entity的欄位，可以自行更換此次upload要label成哪一個
+- Colume C的內容基本就是把「隨意開頭」到「隨意結尾」間的文字append起來，並且爬蟲會將那個欄位當成範例問句丟給LUIS
+- 顏色對應的Entity欄位為是為了要計算該從第幾個字到第幾個字Label起來，只要將文字填上去，右邊的數字就會自動對應了
+![image](https://github.com/youxanjump/luis_sheet/blob/master/截圖%202021-04-17%20下午3.30.09.png)
+- 右邊的數字等於-1時，就代表你的文字中並沒有包含該Entity
+- 執行完此動作後，就可以直接TRAIN了
 
 ### 從Google Sheet將Alias List上傳至LUIS
 - 修改 config_LUIS.js 中的 googleSheetForEntity 變數，貼上你的Sheet Location
 - 執行程式
  ```shell
- npm run alias
+ npm run luis-entity-alias
 ```
 - 下面的分頁名稱請命名的跟你的「Entity」名稱一樣
 
@@ -65,7 +70,7 @@ npm install
 - 修改 config_LUIS.js 中的 googleSheetForInformation 變數，貼上你的Sheet Location
 - 執行程式
  ```shell
- npm run entity_csv
+ npm run csv-entity-list
 ```
 ![image](https://github.com/youxanjump/luis_sheet/blob/master/截圖%202021-02-23%20下午10.39.49.png)
 
@@ -73,7 +78,7 @@ npm install
 - 修改 config_LUIS.js 中的 googleSheetForEntity 變數，貼上你的Sheet Location
 - 執行程式
  ```shell
- npm run alias_csv
+ npm run csv-entity-alias
 ```
 - 跟上傳LUIS Alias List用同一張Sheet就可以了
 
@@ -81,8 +86,14 @@ npm install
 - 修改 config_LUIS.js 中的 googleSheetForAnswer 變數，貼上你的Sheet Location
 - 執行程式
  ```shell
- npm run answer_csv
+ npm run csv-answer
 ```
 - 只需要有「Question」以及「Answer」兩欄位即可，也可以參考以下格式
 
 ![image](https://github.com/youxanjump/luis_sheet/blob/master/截圖%202021-02-23%20下午10.38.55.png)
+
+### 刪掉專案中轉出來的CSV檔
+- 執行程式
+ ```shell
+ npm run delete
+```

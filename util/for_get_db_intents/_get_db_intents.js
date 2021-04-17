@@ -39,24 +39,31 @@ const callGetDBIntents = async (options, JSONinformation, defaultInformations, a
     // console.log(adjustInformation);
     const questionEntities = {};
     defaultInformations.forEach((information) => {
-      // 先把LUIS從question有判斷出來的第一層Entity確定好
 
+      // 先把LUIS從question有判斷出來的第一層Entity確定好
       if(JSONinformation.$instance !== undefined){
         if (JSONinformation.$instance[`${information}${adjustInformation}`] !== undefined) {
           questionEntities[information] = JSONinformation.$instance[`${information}${adjustInformation}`][0].text;
           // console.log(questionEntities[information]);
         }
-        // 還是空的代表並沒有在第一層，可能埋在第二層
-        if (questionEntities[information] === undefined) {
-          defaultInformations.forEach((_information) => {
-            if (JSONinformation[`${_information}${adjustInformation}`] !== undefined) {
-              if (JSONinformation[`${_information}${adjustInformation}`][0][`_${information}${adjustInformation}`] !== undefined) {
-                questionEntities[information] = JSONinformation[`${_information}${adjustInformation}`][0].$instance[`_${information}${adjustInformation}`][0].text;
-              }
-            }
-          });
-        }
       }
+      // // 先把LUIS從question有判斷出來的第一層Entity確定好
+      // if(JSONinformation.$instance !== undefined){
+      //   if (JSONinformation.$instance[`${information}${adjustInformation}`] !== undefined) {
+      //     questionEntities[information] = JSONinformation.$instance[`${information}${adjustInformation}`][0].text;
+      //     // console.log(questionEntities[information]);
+      //   }
+      //   // 還是空的代表並沒有在第一層，可能埋在第二層
+      //   if (questionEntities[information] === undefined) {
+      //     defaultInformations.forEach((_information) => {
+      //       if (JSONinformation[`${_information}${adjustInformation}`] !== undefined) {
+      //         if (JSONinformation[`${_information}${adjustInformation}`][0][`_${information}${adjustInformation}`] !== undefined) {
+      //           questionEntities[information] = JSONinformation[`${_information}${adjustInformation}`][0].$instance[`_${information}${adjustInformation}`][0].text;
+      //         }
+      //       }
+      //     });
+      //   }
+      // }
       // 沒有在第一層也沒有在第二層代表問句中沒有提到這項資訊
       if (questionEntities[information] === undefined) {
         questionEntities[information] = '預設';
@@ -87,9 +94,10 @@ const getDBIntents = async (options, informations) => {
     let dbIntentList = '';
     // console.log(db_intent.entities[`${db_intent.topIntent}所需資訊`][0]);
     if(db_intent.intents[db_intent.topIntent].score < 0.8 || db_intent.topIntent == 'None')return `無法判斷`;
-    if(db_intent.entities[`${db_intent.topIntent}所需資訊`] !== undefined){
-      dbIntentList = await callGetDBIntents(options, db_intent.entities[`${db_intent.topIntent}所需資訊`][0], informations[db_intent.topIntent], `${db_intent.topIntent}所需資訊`);
-    }
+    // if(db_intent.entities[`${db_intent.topIntent}所需資訊`] !== undefined){
+    //   dbIntentList = await callGetDBIntents(options, db_intent.entities[`${db_intent.topIntent}所需資訊`][0], informations[db_intent.topIntent], `${db_intent.topIntent}所需資訊`);
+    // }
+    dbIntentList = await callGetDBIntents(options, db_intent.entities, informations[db_intent.topIntent], '所需資訊');
     return `${db_intent.topIntent}${dbIntentList}`;
     // console.log(`${options.question}: ${db_intent.topIntent}${dbIntentList}`);
   } catch (err) {

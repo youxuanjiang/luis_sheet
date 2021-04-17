@@ -4,12 +4,13 @@
   "description": "For adding intents and questions from google sheet to LUIS",
   "main": "add_intent_to_luis.js",
   "scripts": {
-    "test": "npm test",
-    "intent": "nodemon add_intent_to_luis.js",
-    "alias": "nodemon add_entities_list_to_luis.js",
-    "entity_csv": "nodemon get_information_csv.js",
-    "alias_csv": "nodemon get_information_table_csv.js",
-    "answer_csv": "nodemon turn_sheet_to_csv.js"
+    "test": "node test_intent.js",
+    "delete": "rm -r *.csv",
+    "luis-intent": "node add_intent_to_luis.js",
+    "luis-entity-alias": "node add_entities_list_to_luis.js",
+    "csv-entity-list": "node get_information_csv.js",
+    "csv-entity-alias": "node get_information_table_csv.js",
+    "csv-answer": "node turn_sheet_to_csv.js"
   },
   "author": "youxuan jiang",
   "license": "ISC",

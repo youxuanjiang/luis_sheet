@@ -17,7 +17,7 @@ const listOfIntentsAndQuestions = (rows, intent_header) => {
     if (row.Intent != '') {
       tmp_intent = row.Intent;
       entity_name[tmp_intent] = [];
-      entity_name[tmp_intent].push(`${tmp_intent}所需資訊`);
+      entity_name[tmp_intent].push(`所需資訊`);
     }
     if (row.information != ''){
       entity_name[tmp_intent].push(`${row.information}${entity_name[tmp_intent][0]}`)
