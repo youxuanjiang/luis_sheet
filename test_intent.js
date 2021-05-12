@@ -95,15 +95,15 @@ const turn_sheet_to_csv = async () => {
       // input: query question, return: precise intent
       answer.intent = await getDBIntents(new ConfigGetDBIntent(answer.question).getConfig(), informations);
       if(answer.intent != '無法判斷'){
-        console.log(clc.green(`${answer.question} : ${answer.intent}`));
+        // console.log(clc.green(`${answer.question} : ${answer.intent}`));
         if(!answer.intent.includes('/')){
-          console.error(clc.red(`${answer.question} : ${answer.intent}`));
+          console.error(clc.green(`${answer.question} : ${answer.intent}`));
           csv_data_error.push(answer);
         }else{
           csv_data_correct.push(answer);
         }
       }else{
-        console.error(clc.red(`${answer.question} : ${answer.intent}`));
+        console.error(clc.green(`${answer.question} : ${answer.intent}`));
         csv_data_error.push(answer);
       }
     });

@@ -55,6 +55,7 @@ npm install
 ![image](https://github.com/youxanjump/luis_sheet/blob/master/截圖%202021-04-17%20下午3.30.09.png)
 - 右邊的數字等於-1時，就代表你的文字中並沒有包含該Entity
 - 執行完此動作後，就可以直接TRAIN了
+- 如果出現整排的Question null fail代表應該是ML Entity還沒有defined
 
 ### 從Google Sheet將Alias List上傳至LUIS
 - 修改 config_LUIS.js 中的 googleSheetForEntity 變數，貼上你的Sheet Location
