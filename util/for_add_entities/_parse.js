@@ -24,14 +24,21 @@ const listOfEntitiesAndAlias = (rows, entity_header) => {
   return {entities, alias};
 }
 
-const convert = async (googleSheet) => {
+const convert = async (googleSheet, headerList) => {
   const doc = new GoogleSpreadsheet(googleSheet);
   await doc.useServiceAccountAuth(creds);
   await doc.loadInfo();
+  // console.log(headerList);
   // console.log(doc.index);
   const sheet = doc.sheetsByIndex;
   // console.log(sheet[0].getRows());
-  const sheetLength = sheet.length;
+  let sheetLength;
+  if(headerList.length == 0){
+    sheetLength = sheet.length;
+  }
+  else {
+    sheetLength = headerList.length;
+  }
   // console.log(sheetLength);
 
   console.log('Start parsing Google Sheet...');
@@ -40,9 +47,22 @@ const convert = async (googleSheet) => {
   let alias = {};
 
   for (let i = 0; i < sheetLength; i += 1) {
-    entity_header.push(sheet[i]._rawProperties.title);
-    const rows = await sheet[i].getRows();
+    if(headerList.length == 0){
+      entity_header.push(sheet[i]._rawProperties.title);
+    }
+    else {
+      entity_header.push(headerList[i]);
+    }
+
+    let j = i;
+    if(headerList.length != 0){
+      while(sheet[j]._rawProperties.title != headerList[i]){
+        j++;
+      }
+    }
+    const rows = await sheet[j].getRows();
     const listedentitiesAndalias = listOfEntitiesAndAlias(rows, entity_header[i]);
+
     alias = merge(alias, listedentitiesAndalias.alias);
     entities = merge(entities, listedentitiesAndalias.entities);
   }

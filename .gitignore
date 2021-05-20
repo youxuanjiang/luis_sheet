@@ -1,5 +1,6 @@
 # dependencies
 node_modules
 package-lock.json
-cred.json
 config_LUIS.js
+cred.json
+.DS_Store

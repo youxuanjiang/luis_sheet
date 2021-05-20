@@ -5,7 +5,7 @@
   "main": "add_intent_to_luis.js",
   "scripts": {
     "test": "node test_intent.js",
-    "delete": "rm -r *.csv",
+    "clean": "rm -r *.csv",
     "luis-intent": "node add_intent_to_luis.js",
     "luis-entity-alias": "node add_entities_list_to_luis.js",
     "csv-entity-list": "node get_information_csv.js",

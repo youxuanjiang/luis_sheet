@@ -47,6 +47,7 @@ npm install
  ```shell
  npm run luis-intent
 ```
+[格式可參考/複製這邊](https://docs.google.com/spreadsheets/d/1ThE61R028S0Wyq8t-5dKnDXkt51YctXosJjvABlKfAA/edit?usp=sharing)
 ![image](https://github.com/youxanjump/luis_sheet/blob/master/截圖%202021-04-17%20下午3.18.11.png)
 - 上圖範例之格式務必跟著
 - 隨意開頭到隨意結尾間共有四個Entity的欄位，可以自行更換此次upload要label成哪一個
@@ -61,11 +62,28 @@ npm install
 - 修改 config_LUIS.js 中的 googleSheetForEntity 變數，貼上你的Sheet Location
 - 執行程式
  ```shell
- npm run luis-entity-alias
+ npm run luis-entity-alias -- [想更新的Alias List 1] [想更新的Alias List 2] ...
 ```
+- 如果沒有指定要哪些List的話，系統就會直接讀取整張表了
 - 下面的分頁名稱請命名的跟你的「Entity」名稱一樣
-
+[格式可參考這邊](https://docs.google.com/spreadsheets/d/1XGY9BS7SQFQhRo6QrZj4nRKh38Vj40aGy_g0OU3Ccww/edit?usp=sharing)
 ![image](https://github.com/youxanjump/luis_sheet/blob/master/截圖%202021-02-23%20下午10.40.27.png)
+
+### 測試LUIS語意判斷的正確度
+- 修改 config_LUIS.js 中的 googleSheetForTest 變數，貼上你的Sheet Location
+- 執行程式
+ ```shell
+ npm run test
+```
+[格式可參考這邊](https://docs.google.com/spreadsheets/d/1HFjnXqb5ZKD61EspnipSWQLrgjdx2AktHbHQsA3xkOk/edit?usp=sharing)
+- 一定要記得把預測試的intent及其entity資訊都列在左邊，並且question就是你要測試的問句
+- 最後會產生兩個CSV file
+	- 分別代表正確（但可能會有False Positive存在，務必還是要檢查）
+		- 尤其是該抓到的entity沒抓到，然後就直接進入預設階段
+		- 或是intent判斷錯誤，但Entity卻都神奇的判斷出來
+	- 以及錯誤，錯誤基本上分成兩種
+		- intent判斷不出來
+		- Entity抓錯導致於在map alias的時候找不到
 
 ### 從Google Sheet將「實體」列表轉成CSV
 - 修改 config_LUIS.js 中的 googleSheetForInformation 變數，貼上你的Sheet Location
@@ -96,5 +114,5 @@ npm install
 ### 刪掉專案中轉出來的CSV檔
 - 執行程式
  ```shell
- npm run delete
+ npm run clean
 ```

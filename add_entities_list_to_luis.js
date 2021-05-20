@@ -21,7 +21,7 @@ const configAddEntities = {
   uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/closedlists`,
 };
 
-parse(googleSheetForEntity)
+parse(googleSheetForEntity, process.argv.slice(2))
     .then((model) => {
       configAddEntities.enrityHeaderList = model.entity_header;
       configAddEntities.entityList = model.entities;
