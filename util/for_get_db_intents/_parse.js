@@ -14,13 +14,13 @@ const listOfIntentsAndQuestions = (rows) => {
     for (const row of rows) {
       if (row.Intent != '') {
         tmp_intent = row.Intent;
-        questions.push(row.question);
+        if(row.question != undefined)questions.push(row.question);
         informations[row.Intent] = [];
         informations[row.Intent].push(row.information);
         intents.push(tmp_intent);
         // console.log(informations[row.Intent]);
       } else {
-        questions.push(row.question);
+        if(row.question != undefined)questions.push(row.question);
         if (row.information != '') {
           informations[tmp_intent].push(row.information);
           // console.log(informations[tmp_intent]);

@@ -4,13 +4,13 @@ const clc = require('cli-color');
 const Diff = require('diff');
 
 // 取得從question中parse出來的entities，再將其送進Entities中查表取得其正式名稱
-const callGetList = async (option, informations) => {
+const callGetList = async (option, informations, if_campus_exist, if_department_exist) => {
   let finalList = '';
-  let if_department_exist = false;
-  let if_campus_exist = false;
+  // console.log(1);
 
-  for (const defaultInformation of informations._list) {
+  for await (const defaultInformation of informations._list) {
     // console.log(informations._query[defaultInformation]);
+    // console.log(2);
 
     const queryParamsForList = {
       'subscription-key': option.LUISstagingSlotKey,
@@ -30,60 +30,89 @@ const callGetList = async (option, informations) => {
       return '';
       // console.log("%c ${informations._query[defaultInformation]} is not defined in list ${defaultInformation}",'color: red;');
     }
+    // console.log(3);
 
     if(defaultInformation === '校區') {
+      // console.log(4);
       if_campus_exist = true;
       if(list === '沒指定'){
+        // console.log(5);
         if_campus_exist = false;
       }
       else {
+        // console.log(6);
         finalList = finalList.concat(`/${list}`);
       }
     }
     // 從系所或行政組別名稱判斷是隸屬於哪個單位名稱的
     // 先判斷nput有沒有「學院」或「處室」的資訊
     else if(defaultInformation === '單位名稱'){
+      // console.log(7);
       if_department_exist = true;
       // 沒指定代表沒有相關資訊
       if(list === '沒指定'){
+        // console.log(8);
         if_department_exist = false;
       }
       // 反之就是使用者已經有輸入相關資訊了
       else {
+        // console.log(9);
+        // console.log(if_campus_exist);
         // 檢查「校區的資訊有沒有已經存在」
         if(!if_campus_exist){
-          let campus = await callGetList(option, {
-            _list: ['校區'],
-            _query: {
-              '校區': list,
+          // console.log(10);
+          let result_campus = await callGetList(
+            option, {
+              _list: ['校區'],
+              _query: {
+                '校區': list,
+              },
             },
-          });
+            if_campus_exist,
+            if_department_exist
+          );
+          let campus = result_campus.finalList;
+          if_campus_exist = result_campus.if_campus_exist;
+          if_department_exist = result_campus.if_department_exist;
           if(campus === '')campus = '/沒指定';
           finalList = finalList.concat(`${campus}/${list}`);
         }
         else{
+          // console.log(11);
           finalList = finalList.concat(`/${list}`);
         }
       }
     }
     // 此時判斷到「系所名稱這一塊」
     else if(defaultInformation === '單位內組別'){
+      // console.log(12);
       // 如果有抓到「單位內名稱」才要找
       if (list !== '沒指定') {
+        // console.log(13);
         // 先判斷有沒有已經有「單位名稱(學院、處室)的資訊了」
         // 如果不存在，則直接拿目前已經轉好的「單位內組別」去查表，取得「單位名稱」
         if(!if_department_exist){
-          let department = await callGetList(option, {
-            _list: ['單位名稱'],
-            _query: {
-              '單位名稱': list,
+          // console.log(14);
+          // console.log(if_campus_exist);
+          let resule_department = await callGetList(option,
+            {
+              _list: ['單位名稱'],
+              _query: {
+                '單位名稱': list,
+              },
             },
-          });
+            if_campus_exist,
+            if_department_exist
+          );
+          department = resule_department.finalList;
+          if_campus_exist = resule_department.if_campus_exist;
+          if_department_exist = resule_department.if_department_exist;
           if(department === '')department = '/沒指定';
           finalList = finalList.concat(`${department}/${list}`);
         }
         // 如果「單位名稱」已經存在則直接將「單位內組別」的名稱接在後面
         else{
+          // console.log(15);
           finalList = finalList.concat(`/${list}`);
         }
       }
@@ -111,7 +140,11 @@ const callGetList = async (option, informations) => {
     }
   }
 
-  return finalList;
+  return {
+    finalList,
+    if_campus_exist,
+    if_department_exist,
+  };
 };
 
 const callGetDBIntents = async (options, JSONinformation, defaultInformations, adjustInformation) => {
@@ -156,9 +189,9 @@ const callGetDBIntents = async (options, JSONinformation, defaultInformations, a
     const intentList = await callGetList(options, {
       _query: questionEntities,
       _list: defaultInformations,
-    });
+    }, false, false);
 
-    return intentList;
+    return intentList.finalList;
   } catch (err) {
     console.log(`Error in callGetDBIntents: ${err.message}`);
   }
@@ -175,7 +208,7 @@ const getDBIntents = async (options, informations) => {
     let JSONinformation = {};
     let dbIntentList = '';
     // console.log(db_intent.entities[`${db_intent.topIntent}所需資訊`][0]);
-    if(db_intent.intents[db_intent.topIntent].score < 0.8 || db_intent.topIntent == 'None')return `無法判斷`;
+    if(db_intent.intents[db_intent.topIntent].score < 0.5 || db_intent.topIntent == 'None')return `無法判斷`;
     // if(db_intent.entities[`${db_intent.topIntent}所需資訊`] !== undefined){
     //   dbIntentList = await callGetDBIntents(options, db_intent.entities[`${db_intent.topIntent}所需資訊`][0], informations[db_intent.topIntent], `${db_intent.topIntent}所需資訊`);
     // }

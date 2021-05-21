@@ -19,7 +19,8 @@ const listOfAnswersAndQuestionsPair = (rows) => {
         // console.log(informations[tmp_intent]);
       }
     }
-    if (row.question != '') {
+    // console.log(`row.question = ${row.question}`);
+    if (row.question != undefined) {
       answers.push({
         question: row.question,
       });

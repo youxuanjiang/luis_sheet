@@ -17,7 +17,7 @@ const csvWriter = createCsvWriter({
 
 const get_information_csv = async () => {
   try{
-    const model = await parse(googleSheetForEntity);
+    const model = await parse(googleSheetForEntity, process.argv.slice(2));
     const {
       entity_header,
       entities,
