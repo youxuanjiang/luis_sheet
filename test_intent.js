@@ -2,7 +2,7 @@ const queryString = require('querystring');
 const parse = require('./util/for_test/_parse');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const fs = require('fs');
-const getDBIntents = require('./util/for_get_db_intents/_get_db_intents');
+const getDBIntents = require('./util/for_test/_get_db_intents');
 const clc = require('cli-color');
 
 // LUIS Configure

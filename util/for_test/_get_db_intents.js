@@ -1,40 +1,37 @@
 const requestPromise = require('request-promise');
 const queryString = require('querystring');
 const clc = require('cli-color');
-
-const Connection = require('mssql').ConnectionPool;
-const Request = require('mssql').Request;
-
-const BDRCMssql = require('../../config_LUIS.js')
-
-const connection = new Connection(BDRCMssql);
-
-var if_need_building_name = false;
-
-// 從資料庫中取得該intent所需要的information
-const getInformation = async (intent) => {
-  const information = [];
-  const response = await new Request(connection).query("SELECT Information from dbo.intent_information WHERE Intent LIKE '%" + intent + "%';");
-  // const response = await new Request(connection).query("SELECT Information from dbo.intent_information WHERE Intent = '\n♥學校各部門連絡方式';");
-  // console.log(response);
-  response.recordset.forEach((info) => {
-    information.push(info.Information);
-  });
-    // // // console.log(information);
-  return information;
-};
+const Diff = require('diff');
 
 // 取得從question中parse出來的entities，再將其送進Entities中查表取得其正式名稱
-const callGetList = async (informations, if_campus_exist, if_department_exist) => {
+const callGetList = async (option, informations, if_campus_exist, if_department_exist) => {
   let finalList = '';
-  // console.log(information);
-  for (const defaultInformation of informations._list) {
-    // console.log(informations._query);
-    const response = await new Request(connection).query("SELECT Information from dbo.information_table WHERE Class = '\n" + defaultInformation +"' AND Alias = '" + informations._query[defaultInformation] + "';");
-    // console.logs(response);
+  // console.log(1);
+
+  for await (const defaultInformation of informations._list) {
+    // console.log(informations._query[defaultInformation]);
+    // console.log(2);
+
+    const queryParamsForList = {
+      'subscription-key': option.LUISstagingSlotKey,
+      'verbose': true,
+      'query': informations._query[defaultInformation],
+    };
+    const uri = `${option.LUISendpoint}luis/prediction/v3.0/apps/${option.LUISappId}/slots/staging/predict?${queryString.stringify(queryParamsForList)}`;
+    const response = await requestPromise(uri);
+    // console.log(defaultInformation);
+    // console.log(informations._query[defaultInformation]);
+    // console.log(JSON.parse(response).prediction.entities[defaultInformation]);
     let list = '';
-    if(response.recordset[0] !== undefined) list = response.recordset[0].Information;
-    // console.log(`list: ${list}`);
+    if (JSON.parse(response).prediction.entities[defaultInformation] !== undefined) {
+      list = JSON.parse(response).prediction.entities[defaultInformation][0][0];
+    }else {
+      list === '沒指定'
+      console.error(clc.red(`${informations._query[defaultInformation]} is not defined in list ${defaultInformation}`));
+      // console.log("%c ${informations._query[defaultInformation]} is not defined in list ${defaultInformation}",'color: red;');
+    }
+    // console.log(3);
+
     if(defaultInformation === '校區') {
       if_campus_exist = true;
       if(list === '沒指定'){
@@ -44,6 +41,7 @@ const callGetList = async (informations, if_campus_exist, if_department_exist) =
       else if(if_need_building_name){
         if (list === '台北校區') {
           let building_name = await callGetList(
+            option,
             {
               _list: ['大樓名稱'],
               _query: {
@@ -73,6 +71,7 @@ const callGetList = async (informations, if_campus_exist, if_department_exist) =
       else if(if_need_building_name){
         if (list !== '沒指定') {
           let building_name = await callGetList(
+            option,
             {
               _list: ['大樓名稱'],
               _query: {
@@ -93,7 +92,9 @@ const callGetList = async (informations, if_campus_exist, if_department_exist) =
         // 檢查「校區的資訊有沒有已經存在」
         if(!if_campus_exist){
           // console.log('hey campus');
-          let result_campus = await callGetList({
+          let result_campus = await callGetList(
+            option,
+            {
               _list: ['校區'],
               _query: {
                 '校區': list,
@@ -120,6 +121,7 @@ const callGetList = async (informations, if_campus_exist, if_department_exist) =
       if (list !== '沒指定') {
         if(if_need_building_name){
           let building_name = await callGetList(
+            option,
             {
               _list: ['大樓名稱'],
               _query: {
@@ -135,7 +137,9 @@ const callGetList = async (informations, if_campus_exist, if_department_exist) =
         // 如果不存在，則直接拿目前已經轉好的「單位內組別」去查表，取得「單位名稱」
         else if(!if_department_exist){
           // console.log(`Send ${list} to \'單位名稱\'`);
-          let resule_department = await callGetList({
+          let resule_department = await callGetList(
+            option,
+            {
               _list: ['單位名稱'],
               _query: {
                 '單位名稱': list,
@@ -180,9 +184,9 @@ const callGetList = async (informations, if_campus_exist, if_department_exist) =
     }
     // 從單位名稱推到大樓名稱
     else if(defaultInformation === '大樓名稱'){
-      if (list !== '沒指定') {
-        finalList = `/${list}`;
-      }
+      // if (list !== '沒指定') {
+      finalList = `/${list}`;
+      // }
     }
     // 從公車停靠站點推回校區
     else if(defaultInformation === '公車停靠站點'){
@@ -191,6 +195,7 @@ const callGetList = async (informations, if_campus_exist, if_department_exist) =
         if(!if_campus_exist){
           // console.log(10);
           let result_campus = await callGetList(
+            option,
             {
               _list: ['校區'],
               _query: {
@@ -239,6 +244,7 @@ const callGetDBIntents = async (options, JSONinformation, defaultInformations, a
     // console.log(adjustInformation);
     const questionEntities = {};
     defaultInformations.forEach((information) => {
+
       // 先把LUIS從question有判斷出來的第一層Entity確定好
       if(JSONinformation.$instance !== undefined){
         if (JSONinformation.$instance[`${information}${adjustInformation}`] !== undefined) {
@@ -264,67 +270,51 @@ const callGetDBIntents = async (options, JSONinformation, defaultInformations, a
       //   }
       // }
       // 沒有在第一層也沒有在第二層代表問句中沒有提到這項資訊
+
       if (questionEntities[information] === undefined) {
         questionEntities[information] = '預設';
       }
     });
 
     // 取得entities之正式名稱
-    const intentList = await callGetList({
+    const intentList = await callGetList(options, {
       _query: questionEntities,
       _list: defaultInformations,
     }, false, false);
 
     return intentList.finalList;
   } catch (err) {
-    // console.log(`Error in callGetDBIntents: ${err.message}`);
+    console.log(`Error in callGetDBIntents: ${err.message}`);
   }
 };
 
 // 取得query question真正的intent
-const getDBIntents = async (options) => {
+const getDBIntents = async (options, informations) => {
   try {
-    const start_time = new Date()/1000;
+    // console.log(options.question);
     const response = await requestPromise(options.pridictionUri);
-    const after_luis_time = new Date()/1000;
-    // console.log(`LUIS time: ${after_luis_time - start_time}`);
     const db_intent = JSON.parse(response).prediction;
-    if(db_intent.topIntent == 'None' ||  db_intent.intents[db_intent.topIntent].score < 0.8){
-      const after_parse_intent = new Date()/1000;
-      // console.log(`Acknowledge Breakdown time: ${after_parse_intent - after_information_time}`);
-      return options.question;
-    };
-
-    await connection.connect();
-    const information = await getInformation(db_intent.topIntent);
-    const after_information_time = new Date()/1000;
-    // console.log(`Get information time: ${after_information_time - after_luis_time}`);
+    // console.log("%j", db_intent);
+    // console.log(informations);
     let JSONinformation = {};
     let dbIntentList = '';
-    // console.log(information);
-    // console.log(db_intent.entities);
-    // if( db_intent.intents[db_intent.topIntent].score < 0.8)return '無法判斷';
+    // console.log(db_intent.entities[`${db_intent.topIntent}所需資訊`][0]);
+    if(db_intent.intents[db_intent.topIntent].score < 0.5 || db_intent.topIntent == 'None')return `無法判斷`;
     // if(db_intent.entities[`${db_intent.topIntent}所需資訊`] !== undefined){
-      // dbIntentList = await callGetDBIntents(options, db_intent.entities[`${db_intent.topIntent}所需資訊`][0], information, `${db_intent.topIntent}所需資訊`);
+    //   dbIntentList = await callGetDBIntents(options, db_intent.entities[`${db_intent.topIntent}所需資訊`][0], informations[db_intent.topIntent], `${db_intent.topIntent}所需資訊`);
     // }
-    // console.log(information);
-    if(information[0] !== ''){
+    // console.log(`Test entities of intent "${db_intent.topIntent}" is "${informations[db_intent.topIntent]}"`);
+
+    // 如果該intent沒有Entity的話，就不需要去查Alias Table了
+    if(informations[db_intent.topIntent][0] !== '')
       if (db_intent.topIntent === '能租借之場地或設備一覽' || db_intent.topIntent === '門禁卡申請') {
         if_need_building_name = true;
       }
-      dbIntentList = await callGetDBIntents(options, db_intent.entities, information, '所需資訊');
-    }
-    // dbIntentList = await callGetDBIntents(options, db_intent.entities, information, '所需資訊');
-    connection.close();
-    const after_parse_intent = new Date()/1000;
-    // console.log(`Get real information time: ${after_parse_intent - after_information_time}`);
-    // return db_intent.topIntent;
-	// console.log(db_intent.topIntent)
-
+      dbIntentList = await callGetDBIntents(options, db_intent.entities, informations[db_intent.topIntent], '所需資訊');
+    // console.log(`${options.question}: ${db_intent.topIntent}${dbIntentList}`);
     return `${db_intent.topIntent}${dbIntentList}`;
-    // // // console.log(`${options.question}: ${db_intent.topIntent}${dbIntentList}`);
   } catch (err) {
-    // // console.log(`Error in getDBIntents: ${err.message}`);
+    console.log(`Error in getDBIntents: ${err.message}`);
   }
 };
 

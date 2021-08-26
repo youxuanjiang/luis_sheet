@@ -1,9 +1,9 @@
-const parse = require('./util/for_get_db_intents/_parse');
+const parse = require('../util/for_get_db_intents/_parse');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 const {
   googleSheetForInformation,
-} = require('./config_LUIS.js');
+} = require('../config_LUIS.js');
 
 const csv_data = [];
 const csvWriter = createCsvWriter({
