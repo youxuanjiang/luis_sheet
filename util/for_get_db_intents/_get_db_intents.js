@@ -11,30 +11,28 @@ const connection = new Connection(BDRCMssql);
 
 var if_need_building_name = false;
 
-// 從資料庫中取得該intent所需要的information
+// 從intent_table中取得該intent所需要的information
 const getInformation = async (intent) => {
   const information = [];
   const response = await new Request(connection).query("SELECT Information from dbo.intent_information WHERE Intent LIKE '%" + intent + "%';");
-  // const response = await new Request(connection).query("SELECT Information from dbo.intent_information WHERE Intent = '\n♥學校各部門連絡方式';");
-  // console.log(response);
+
   response.recordset.forEach((info) => {
     information.push(info.Information);
   });
-    // // // console.log(information);
+
   return information;
 };
 
-// 取得從question中parse出來的entities，再將其送進Entities中查表取得其正式名稱
+// 取得從question中parse出來的entities，再將其送進informatiob table中查表取得其正式名稱
+// 這邊有做一堆不同entity間有「相依性」的處理，比方說知道系所名稱就會知道校區以及學院
+// 在另外一種case，知道系所名稱同時也代表該系所所在的「大樓名稱」也知道了
+// 總之這邊很亂，希望這邊不要爆掉QQ (但目前是都還沒有啦)
 const callGetList = async (informations, if_campus_exist, if_department_exist) => {
   let finalList = '';
-  // console.log(information);
   for (const defaultInformation of informations._list) {
-    // console.log(informations._query);
     const response = await new Request(connection).query("SELECT Information from dbo.information_table WHERE Class = '\n" + defaultInformation +"' AND Alias = '" + informations._query[defaultInformation] + "';");
-    // console.logs(response);
     let list = '';
     if(response.recordset[0] !== undefined) list = response.recordset[0].Information;
-    // console.log(`list: ${list}`);
     if(defaultInformation === '校區') {
       if_campus_exist = true;
       if(list === '沒指定'){
@@ -235,41 +233,26 @@ const callGetList = async (informations, if_campus_exist, if_department_exist) =
 
 const callGetDBIntents = async (options, JSONinformation, defaultInformations, adjustInformation) => {
   try {
-    // console.log(defaultInformations);
-    // console.log(adjustInformation);
     const questionEntities = {};
     defaultInformations.forEach((information) => {
-      // 先把LUIS從question有判斷出來的第一層Entity確定好
+      // 從LUIS回傳的東西中parse出我們所需要的entity資訊，每個需要的entity只抓一筆資料
+      // 比方說：「系所簡介」這個intent需要「校區」、「單位名稱」、「單位內組別」等entity的資訊
+      // 假設mtext是：「資工系簡介」，parse完之後就會得到「校區」:undefined、「單位名稱」:undefined、「單位內組別」:資工系
+      // 目前沒有去處理「同樣的entity卻有複數個資訊時的情況」，所以如果一句話同時出現兩個不同的系所名稱，只會parse到第一個
       if(JSONinformation.$instance !== undefined){
         if (JSONinformation.$instance[`${information}${adjustInformation}`] !== undefined) {
           questionEntities[information] = JSONinformation.$instance[`${information}${adjustInformation}`][0].text;
-          // console.log(questionEntities[information]);
         }
       }
-      // // 先把LUIS從question有判斷出來的第一層Entity確定好
-      // if(JSONinformation.$instance !== undefined){
-      //   if (JSONinformation.$instance[`${information}${adjustInformation}`] !== undefined) {
-      //     questionEntities[information] = JSONinformation.$instance[`${information}${adjustInformation}`][0].text;
-      //     // console.log(questionEntities[information]);
-      //   }
-      //   // 還是空的代表並沒有在第一層，可能埋在第二層
-      //   if (questionEntities[information] === undefined) {
-      //     defaultInformations.forEach((_information) => {
-      //       if (JSONinformation[`${_information}${adjustInformation}`] !== undefined) {
-      //         if (JSONinformation[`${_information}${adjustInformation}`][0][`_${information}${adjustInformation}`] !== undefined) {
-      //           questionEntities[information] = JSONinformation[`${_information}${adjustInformation}`][0].$instance[`_${information}${adjustInformation}`][0].text;
-      //         }
-      //       }
-      //     });
-      //   }
-      // }
-      // 沒有在第一層也沒有在第二層代表問句中沒有提到這項資訊
       if (questionEntities[information] === undefined) {
         questionEntities[information] = '預設';
       }
     });
 
     // 取得entities之正式名稱
+    // 比方說上述的「資工系」就會變成「資訊工程學系」
+    // 我這邊還有去handle說只要知道系所名稱，連校區跟學院名稱都會一起回傳回來
+    // 比方說上面的資訊悚進這個function之後，便會回傳「交大校區／資訊學院／資訊工程學院」
     const intentList = await callGetList({
       _query: questionEntities,
       _list: defaultInformations,
@@ -277,7 +260,7 @@ const callGetDBIntents = async (options, JSONinformation, defaultInformations, a
 
     return intentList.finalList;
   } catch (err) {
-    // console.log(`Error in callGetDBIntents: ${err.message}`);
+    console.log(`Error in callGetDBIntents: ${err.message}`);
   }
 };
 
@@ -285,46 +268,38 @@ const callGetDBIntents = async (options, JSONinformation, defaultInformations, a
 const getDBIntents = async (options) => {
   try {
     const start_time = new Date()/1000;
+    // 送進LUIS
     const response = await requestPromise(options.pridictionUri);
     const after_luis_time = new Date()/1000;
-    // console.log(`LUIS time: ${after_luis_time - start_time}`);
     const db_intent = JSON.parse(response).prediction;
+
+    // 若top intent的confidence score若小於0.8則直接return (不再繼續分析)
     if(db_intent.topIntent == 'None' ||  db_intent.intents[db_intent.topIntent].score < 0.8){
       const after_parse_intent = new Date()/1000;
-      // console.log(`Acknowledge Breakdown time: ${after_parse_intent - after_information_time}`);
       return options.question;
     };
 
     await connection.connect();
+    // 每個intent所需要的entity的種類都不一樣，這邊是去資料庫撈出top intent所需要的entity種類
     const information = await getInformation(db_intent.topIntent);
     const after_information_time = new Date()/1000;
-    // console.log(`Get information time: ${after_information_time - after_luis_time}`);
     let JSONinformation = {};
     let dbIntentList = '';
-    // console.log(information);
-    // console.log(db_intent.entities);
-    // if( db_intent.intents[db_intent.topIntent].score < 0.8)return '無法判斷';
-    // if(db_intent.entities[`${db_intent.topIntent}所需資訊`] !== undefined){
-      // dbIntentList = await callGetDBIntents(options, db_intent.entities[`${db_intent.topIntent}所需資訊`][0], information, `${db_intent.topIntent}所需資訊`);
-    // }
-    // console.log(information);
+
     if(information[0] !== ''){
       if (db_intent.topIntent === '能租借之場地或設備一覽' || db_intent.topIntent === '門禁卡申請') {
         if_need_building_name = true;
       }
+      // 將LUIS從mtext上面抓到的種種entity，轉換成唯一的名稱
       dbIntentList = await callGetDBIntents(options, db_intent.entities, information, '所需資訊');
     }
-    // dbIntentList = await callGetDBIntents(options, db_intent.entities, information, '所需資訊');
     connection.close();
-    const after_parse_intent = new Date()/1000;
-    // console.log(`Get real information time: ${after_parse_intent - after_information_time}`);
-    // return db_intent.topIntent;
-	// console.log(db_intent.topIntent)
 
+    const after_parse_intent = new Date()/1000;
+    // 最後return intent資訊以及唯一的entities（每個intent的entity都有固定的order，方便linebot端去parse所需要的資訊）
     return `${db_intent.topIntent}${dbIntentList}`;
-    // // // console.log(`${options.question}: ${db_intent.topIntent}${dbIntentList}`);
   } catch (err) {
-    // // console.log(`Error in getDBIntents: ${err.message}`);
+    console.log(`Error in getDBIntents: ${err.message}`);
   }
 };
 
