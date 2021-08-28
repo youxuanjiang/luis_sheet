@@ -34,11 +34,7 @@ const ConfigGetDBIntent = class {
 }
 
 const getDBIntent = async (mtext) => {
-  // For test specific question
-  const start_time = new Date()/1000;
   const db_intent = await getDBIntents(new ConfigGetDBIntent(mtext).getConfig());
-  const finish_time = new Date()/1000;
-  // console.log(`total time: ${finish_time - start_time}`);
   process.stdout.write(db_intent);
 };
 

@@ -5,7 +5,7 @@ const clc = require('cli-color');
 const Connection = require('mssql').ConnectionPool;
 const Request = require('mssql').Request;
 
-const BDRCMssql = require('../../config_LUIS.js')
+const {BDRCMssql} = require('../../config_LUIS.js')
 
 const connection = new Connection(BDRCMssql);
 
