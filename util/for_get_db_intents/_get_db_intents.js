@@ -1,6 +1,5 @@
 const requestPromise = require('request-promise');
 const queryString = require('querystring');
-const clc = require('cli-color');
 
 const Connection = require('mssql').ConnectionPool;
 const Request = require('mssql').Request;
@@ -32,7 +31,10 @@ const callGetList = async (informations, if_campus_exist, if_department_exist) =
   for (const defaultInformation of informations._list) {
     const response = await new Request(connection).query("SELECT Information from dbo.information_table WHERE Class = '\n" + defaultInformation +"' AND Alias = '" + informations._query[defaultInformation] + "';");
     let list = '';
+
     if(response.recordset[0] !== undefined) list = response.recordset[0].Information;
+    if(list === '') list = '沒指定'
+
     if(defaultInformation === '校區') {
       if_campus_exist = true;
       if(list === '沒指定'){
