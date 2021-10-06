@@ -14,11 +14,9 @@ var if_need_building_name = false;
 const getInformation = async (intent) => {
   const information = [];
   const response = await new Request(connection).query("SELECT Information from dbo.intent_information WHERE Intent LIKE '%" + intent + "%';");
-
   response.recordset.forEach((info) => {
     information.push(info.Information);
   });
-
   return information;
 };
 
@@ -29,9 +27,8 @@ const getInformation = async (intent) => {
 const callGetList = async (informations, if_campus_exist, if_department_exist) => {
   let finalList = '';
   for (const defaultInformation of informations._list) {
-    const response = await new Request(connection).query("SELECT Information from dbo.information_table WHERE Class = '\n" + defaultInformation +"' AND Alias = '" + informations._query[defaultInformation] + "';");
+    const response = await new Request(connection).query("SELECT Information from dbo.information_table WHERE Class Like '%" + defaultInformation +"%' AND Alias = '" + informations._query[defaultInformation] + "';");
     let list = '';
-
     if(response.recordset[0] !== undefined) list = response.recordset[0].Information;
     if(list === '') list = '沒指定'
 
@@ -246,7 +243,7 @@ const callGetDBIntents = async (options, JSONinformation, defaultInformations, a
           questionEntities[information] = JSONinformation.$instance[`${information}${adjustInformation}`][0].text;
         }
       }
-      if (questionEntities[information] === undefined) {
+      if (questionEntities[information] === undefined || questionEntities[information] === '') {
         questionEntities[information] = '預設';
       }
     });
